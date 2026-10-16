@@ -1,0 +1,1745 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>寒山 · 小说项目管理</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>❄️</text></svg>">
+<style>
+    :root,
+    [data-theme="morandi"] {
+        --bg:        #e8e4e1;
+        --panel:     rgba(245,242,238,0.82);
+        --border:    rgba(188,175,165,0.45);
+        --text:      #5c534c;
+        --text-dim:  #9b8e84;
+        --text-hi:   #3d3630;
+        --accent:    #9b9eb0;
+        --accent2:   #b0a3a0;
+        --blue:      #8a9ba8;
+        --green:     #9aab9a;
+        --rose:      #b89a9a;
+        --gold:      #c4b49a;
+        --red:       #c49a9a;
+        --hover:     rgba(180,170,160,0.18);
+        --shadow:    0 2px 16px rgba(100,90,80,0.08);
+        --radius:    12px;
+    }
+    [data-theme="ocean"] {
+        --bg:        #dce8ef;
+        --panel:     rgba(235,243,249,0.82);
+        --border:    rgba(150,180,200,0.45);
+        --text:      #3d525e;
+        --text-dim:  #7a8f9c;
+        --text-hi:   #1e303a;
+        --accent:    #7a9bb5;
+        --accent2:   #8fa4b0;
+        --blue:      #6b8fa8;
+        --green:     #7a9e8a;
+        --rose:      #a07a7a;
+        --gold:      #a8987a;
+        --red:       #a07a7a;
+        --hover:     rgba(140,170,190,0.16);
+        --shadow:    0 2px 16px rgba(60,80,100,0.08);
+        --radius:    12px;
+    }
+    [data-theme="forest"] {
+        --bg:        #dfe6db;
+        --panel:     rgba(240,245,237,0.82);
+        --border:    rgba(165,180,155,0.45);
+        --text:      #4a5442;
+        --text-dim:  #7d8a72;
+        --text-hi:   #2d3326;
+        --accent:    #8a9e7a;
+        --accent2:   #9aaa8a;
+        --blue:      #7a8e8a;
+        --green:     #7a9a6a;
+        --rose:      #9a7a7a;
+        --gold:      #a8986a;
+        --red:       #9a7a7a;
+        --hover:     rgba(160,175,145,0.16);
+        --shadow:    0 2px 16px rgba(70,80,60,0.08);
+        --radius:    12px;
+    }
+    [data-theme="sunset"] {
+        --bg:        #ece0db;
+        --panel:     rgba(248,242,238,0.82);
+        --border:    rgba(195,175,165,0.45);
+        --text:      #5c4a42;
+        --text-dim:  #9b8075;
+        --text-hi:   #3d2a22;
+        --accent:    #b8957a;
+        --accent2:   #c4a38a;
+        --blue:      #8a8a9a;
+        --green:     #8a9a7a;
+        --rose:      #b87a7a;
+        --gold:      #c4a06a;
+        --red:       #b87a7a;
+        --hover:     rgba(185,165,150,0.16);
+        --shadow:    0 2px 16px rgba(100,70,55,0.08);
+        --radius:    12px;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+        font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        height: 100vh;
+        overflow: hidden;
+        display: flex;
+    }
+
+    /* ===== 主内容区 ===== */
+    .main-area {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        padding: 12px 8px 12px 12px;
+        gap: 10px;
+    }
+
+    /* 头部 */
+    header {
+        background: var(--panel);
+        backdrop-filter: blur(12px);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 14px 20px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        box-shadow: var(--shadow);
+        flex-shrink: 0;
+    }
+    header h1 {
+        font-size: 1.25rem;
+        font-weight: 800;
+        color: var(--text-hi);
+        letter-spacing: 1px;
+        white-space: nowrap;
+    }
+    header .dot {
+        width: 8px; height: 8px;
+        border-radius: 50%;
+        background: #9aab9a;
+        box-shadow: 0 0 6px rgba(154,171,154,0.5);
+    }
+    header .subtitle {
+        font-size: 0.75rem;
+        color: var(--text-dim);
+        margin-left: auto;
+    }
+
+    /* 筛选栏 */
+    .filter-bar {
+        background: var(--panel);
+        backdrop-filter: blur(12px);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 10px 16px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+        box-shadow: var(--shadow);
+        flex-shrink: 0;
+    }
+    .filter-bar label {
+        font-size: 0.78rem;
+        font-weight: 700;
+        color: var(--text-dim);
+        white-space: nowrap;
+    }
+    .filter-select {
+        background: rgba(240,237,233,0.8);
+        border: 1px solid var(--border);
+        border-radius: 7px;
+        padding: 5px 8px;
+        color: var(--text);
+        font-size: 0.78rem;
+        font-weight: 600;
+        outline: none;
+        transition: border-color 0.2s;
+    }
+    .filter-select:focus { border-color: var(--accent); }
+
+    .btn {
+        font-size: 0.76rem;
+        padding: 5px 12px;
+        border-radius: 7px;
+        border: 1px solid var(--border);
+        background: rgba(240,237,233,0.7);
+        color: var(--text);
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.15s;
+        white-space: nowrap;
+    }
+    .btn:hover { background: var(--hover); }
+    .btn.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .btn.primary:hover { filter: brightness(0.92); }
+    .btn.danger { color: var(--rose); border-color: rgba(184,154,154,0.4); }
+    .btn.danger:hover { background: rgba(184,154,154,0.12); }
+    .btn.success { color: #8a9b7a; border-color: rgba(138,155,122,0.4); }
+    .btn.success:hover { background: rgba(138,155,122,0.12); }
+    .btn.warn { color: #b8a57a; border-color: rgba(184,165,122,0.4); }
+    .btn.warn:hover { background: rgba(184,165,122,0.12); }
+
+    .checkbox-label {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 0.76rem;
+        color: var(--text-dim);
+        cursor: pointer;
+        white-space: nowrap;
+    }
+    .checkbox-label input { accent-color: var(--accent); }
+
+    .count-badge {
+        font-size: 0.76rem;
+        color: var(--text-dim);
+        font-weight: 700;
+        margin-left: auto;
+    }
+    .progress-badge {
+        background: var(--accent);
+        color: white;
+        padding: 3px 10px;
+        border-radius: 10px;
+        font-size: 0.72rem;
+        font-weight: 600;
+        white-space: nowrap;
+        animation: pulse 1.5s ease-in-out infinite;
+    }
+    .progress-badge.hidden { display: none; }
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.7; }
+    }
+
+    /* 表格容器 */
+    .table-panel {
+        background: var(--panel);
+        backdrop-filter: blur(12px);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+    .table-wrap {
+        flex: 1;
+        overflow: auto;
+        padding: 4px 12px 12px;
+    }
+    .table-panel table {
+        width: 100%;
+        min-width: 0;
+        border-collapse: separate;
+        border-spacing: 0;
+        font-size: 0.8rem;
+        table-layout: fixed;
+    }
+    thead { position: sticky; top: 0; z-index: 2; }
+    th {
+        background: rgba(230,226,220,0.7);
+        backdrop-filter: blur(6px);
+        color: var(--text-dim);
+        font-weight: 700;
+        padding: 9px 6px;
+        text-align: left;
+        white-space: nowrap;
+        border-bottom: 1px solid var(--border);
+    }
+    td {
+        padding: 7px 6px;
+        border-bottom: 1px solid rgba(188,175,165,0.2);
+        white-space: nowrap;
+        vertical-align: middle;
+    }
+    tr { cursor: default; transition: background 0.12s; }
+    tr:hover { background: var(--hover); }
+    tr.selected { background: rgba(155,158,176,0.15); }
+
+    /* 列宽 — 由 JS 动态管理，CSS 仅作回退 */
+    .table-panel th:nth-child(1), .table-panel td:nth-child(1) { }
+    .table-panel th:nth-child(2), .table-panel td:nth-child(2) { }
+    .table-panel th:nth-child(3), .table-panel td:nth-child(3) { }
+    .table-panel th:nth-child(4), .table-panel td:nth-child(4) { }
+    .table-panel th:nth-child(5), .table-panel td:nth-child(5) { }
+    .table-panel th:nth-child(6), .table-panel td:nth-child(6) { }
+    .table-panel th:nth-child(7), .table-panel td:nth-child(7) { }
+    .table-panel th:nth-child(8), .table-panel td:nth-child(8) { }
+    .table-panel th:nth-child(9), .table-panel td:nth-child(9) { }
+
+    .cell-tag, .cell-status {
+        cursor: pointer;
+        padding: 3px 8px;
+        border-radius: 5px;
+        font-size: 0.74rem;
+        font-weight: 600;
+        transition: background 0.15s;
+        display: inline-block;
+    }
+    .cell-tag { color: var(--blue); }
+    .cell-tag:hover { background: rgba(138,155,168,0.12); }
+    .cell-status { color: var(--text); }
+    .cell-status:hover { background: var(--hover); }
+
+    /* 行颜色 */
+    .c-yellow { color: #b8a57a !important; }
+    .c-red    { color: #c49a9a !important; }
+    .c-gray   { color: #b0a8a0 !important; }
+    .c-green  { color: #9aab9a !important; }
+    .c-blue   { color: #8a9ba8 !important; }
+    .c-default { color: var(--text) !important; }
+
+    /* ===== 右侧日志栏 ===== */
+    .log-sidebar {
+        width: 320px;
+        min-width: 200px;
+        display: flex;
+        flex-direction: column;
+        padding: 12px 12px 12px 8px;
+        gap: 10px;
+    }
+
+    .resize-handle {
+        width: 6px;
+        cursor: col-resize;
+        flex-shrink: 0;
+        background: transparent;
+        transition: background 0.15s;
+        z-index: 10;
+    }
+    .resize-handle:hover, .resize-handle.active {
+        background: var(--accent);
+    }
+
+    /* 表格列拖拽手柄 */
+    .col-resizer {
+        position: absolute;
+        right: 0; top: 0; bottom: 0;
+        width: 6px;
+        cursor: col-resize;
+        user-select: none;
+        z-index: 5;
+    }
+    .col-resizer:hover, .col-resizer.active {
+        background: var(--accent);
+    }
+    .table-panel th {
+        position: relative;
+    }
+    .log-panel {
+        background: var(--panel);
+        backdrop-filter: blur(12px);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+    .log-header {
+        padding: 10px 14px;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-shrink: 0;
+    }
+    .log-header h3 {
+        font-size: 0.85rem;
+        color: var(--text-hi);
+        font-weight: 700;
+    }
+    .log-body {
+        flex: 1;
+        overflow-y: auto;
+        padding: 8px 12px;
+        font-family: 'Consolas', 'Courier New', monospace;
+        font-size: 0.72rem;
+        color: var(--text-dim);
+        line-height: 1.6;
+    }
+    .log-line {
+        padding: 2px 0;
+        border-bottom: 1px dotted rgba(188,175,165,0.15);
+        word-break: break-all;
+    }
+
+    /* 快捷操作面板 */
+    .quick-panel {
+        background: var(--panel);
+        backdrop-filter: blur(12px);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        padding: 10px 14px;
+        flex-shrink: 0;
+    }
+    .quick-panel h3 {
+        font-size: 0.82rem;
+        color: var(--text-hi);
+        font-weight: 700;
+        margin-bottom: 8px;
+    }
+    .quick-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 5px;
+    }
+    .quick-grid .btn { text-align: center; font-size: 0.72rem; padding: 5px 6px; }
+
+    /* ===== 右键菜单 ===== */
+    .ctx-menu {
+        position: fixed;
+        z-index: 3000;
+        background: rgba(250,248,245,0.97);
+        backdrop-filter: blur(16px);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        box-shadow: 0 8px 32px rgba(80,70,60,0.15);
+        padding: 6px 0;
+        min-width: 160px;
+        display: none;
+    }
+    .ctx-menu .ctx-item {
+        padding: 7px 16px;
+        font-size: 0.8rem;
+        color: var(--text);
+        cursor: pointer;
+        transition: background 0.1s;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .ctx-menu .ctx-item:hover { background: var(--hover); }
+    .ctx-menu .ctx-sep {
+        height: 1px;
+        background: var(--border);
+        margin: 4px 8px;
+    }
+    .ctx-menu .ctx-item.danger { color: var(--rose); }
+
+    /* ===== 弹窗 ===== */
+    .modal-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 2000;
+        background: rgba(80,70,60,0.3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        backdrop-filter: blur(3px);
+    }
+    .modal-overlay.hidden { display: none; }
+    .modal-box {
+        background: rgba(250,248,245,0.97);
+        border-radius: 14px;
+        padding: 22px 24px;
+        min-width: 340px;
+        max-width: 500px;
+        box-shadow: 0 12px 40px rgba(80,70,60,0.2);
+        border: 1px solid var(--border);
+    }
+    .modal-box h3 {
+        color: var(--text-hi);
+        font-size: 1rem;
+        font-weight: 800;
+        margin-bottom: 12px;
+    }
+    .modal-box input, .modal-box select {
+        width: 100%;
+        padding: 7px 10px;
+        border-radius: 7px;
+        border: 1px solid var(--border);
+        margin-bottom: 10px;
+        font-size: 0.82rem;
+        background: rgba(240,237,233,0.7);
+        color: var(--text);
+    }
+    .modal-actions {
+        display: flex;
+        gap: 8px;
+        justify-content: flex-end;
+        margin-top: 14px;
+    }
+    .tag-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 6px 0;
+        border-bottom: 1px solid rgba(188,175,165,0.2);
+    }
+    .tag-item span { color: var(--text); font-weight: 600; font-size: 0.82rem; }
+
+    /* Toast */
+    .toast {
+        position: fixed;
+        top: 16px;
+        right: 16px;
+        z-index: 4000;
+        padding: 10px 18px;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.82rem;
+        box-shadow: 0 4px 14px rgba(0,0,0,0.1);
+        animation: slideIn 0.25s ease;
+        max-width: 380px;
+    }
+    .toast.info    { background: #e8e6e2; color: var(--text); border: 1px solid var(--border); }
+    .toast.error   { background: #f0e4e4; color: #9a6a6a; border: 1px solid rgba(184,154,154,0.4); }
+    .toast.success { background: #e4ece4; color: #6a8a6a; border: 1px solid rgba(154,171,154,0.4); }
+    @keyframes slideIn {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+</style>
+</head>
+<body>
+
+<!-- ===== 主内容区 ===== -->
+<div class="main-area">
+    <header>
+        <div class="dot"></div>
+        <h1>寒山 · 小说项目管理</h1>
+        <span class="subtitle">基于自动发布 v2.2.5+</span>
+        <select id="themeSelect" class="filter-select" onchange="switchTheme(this.value)" style="font-size:0.72rem;padding:3px 6px;">
+            <option value="morandi">莫兰迪</option>
+            <option value="ocean">深海</option>
+            <option value="forest">森林</option>
+            <option value="sunset">日暮</option>
+        </select>
+        <button class="btn danger" onclick="shutdownServer()" style="font-size:0.72rem;padding:4px 10px;">退出</button>
+    </header>
+
+    <!-- 筛选栏 -->
+    <div class="filter-bar">
+        <label>账号</label>
+        <select id="accountFilter" class="filter-select" onchange="renderTable()">
+            <option value="">全部</option>
+        </select>
+        <label>状态</label>
+        <select id="statusFilter" class="filter-select" onchange="renderTable()">
+            <option value="">全部</option>
+        </select>
+        <label class="checkbox-label">
+            <input type="checkbox" id="headlessCheck" onchange="saveConfig()"> 后台
+        </label>
+        <label class="checkbox-label">
+            <input type="checkbox" id="singleThreadCheck" onchange="saveConfig()"> 单线
+        </label>
+        <label class="checkbox-label" id="concurrentLabel" style="display:inline-flex;align-items:center;gap:4px;">
+            并发数 <input type="number" id="concurrentNum" min="1" max="20" value="5" style="width:50px;padding:2px 4px;border:1px solid var(--border);border-radius:4px;background:var(--bg);color:var(--text);" onchange="saveConfig()">
+        </label>
+        <label class="checkbox-label">
+            <input type="checkbox" id="redOnlyCheck" onchange="renderTable()"> 仅标红
+        </label>
+        <button class="btn primary" onclick="refreshData()">刷新</button>
+        <button class="btn" onclick="importNovelJson()">导入</button>
+        <button class="btn" onclick="manageTags()">账号标记</button>
+        <button class="btn" onclick="manageStatuses()">状态</button>
+        <span class="count-badge" id="rowCount"></span>
+        <span class="progress-badge hidden" id="progressBadge"></span>
+    </div>
+
+    <!-- 表格 -->
+    <div class="table-panel">
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>平台</th>
+                        <th>书名</th>
+                        <th>总章节</th>
+                        <th>已发布</th>
+                        <th>已上传字数</th>
+                        <th>发布计划</th>
+                        <th>上次发布</th>
+                        <th>账号标记</th>
+                        <th>小说状态</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- 拖拽手柄 -->
+<div class="resize-handle" id="sidebarResizer"></div>
+
+<!-- ===== 右侧栏 ===== -->
+<div class="log-sidebar">
+    <!-- 快捷操作 -->
+    <div class="quick-panel">
+        <h3>批量操作</h3>
+        <div class="quick-grid">
+            <button class="btn primary" onclick="batchAction('publish')">一键发布</button>
+            <button class="btn success" onclick="batchAction('sign')">一键签约</button>
+            <button class="btn" onclick="batchAction('verify')">一键验证</button>
+            <button class="btn warn" onclick="publishNextDay()">发布次日</button>
+            <button class="btn" onclick="updateApps()">更新 App</button>
+        </div>
+    </div>
+
+    <!-- 日志 -->
+    <div class="log-panel">
+        <div class="log-header">
+            <h3>执行日志</h3>
+            <button class="btn" onclick="clearLogs()" style="font-size:0.7rem;padding:3px 8px;">清空</button>
+        </div>
+        <div class="log-body" id="logContent">
+            <div class="log-line">等待操作…</div>
+        </div>
+    </div>
+</div>
+
+<!-- ===== 右键菜单 ===== -->
+<div class="ctx-menu" id="ctxMenu">
+    <div class="ctx-item" data-act="publish">📤 快速发布</div>
+    <div class="ctx-item" data-act="sign">✍ 快速签约</div>
+    <div class="ctx-item" data-act="verify">✅ 快速验证</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item" data-act="book_test">📖 快速书测</div>
+    <div class="ctx-item" data-act="cover_test">🎨 快速封测</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item" data-act="check_plan">📊 进度自检</div>
+    <div class="ctx-item" data-act="check_attendance">📅 全勤检查</div>
+    <div class="ctx-item" data-act="cancel_schedule">⏸️ 取消定时</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item" data-act="create_book">📚 快速创书</div>
+    <div class="ctx-item" data-act="open_browser">🌐 打开浏览器</div>
+    <div class="ctx-item" data-act="open_folder">📂 打开文件夹</div>
+    <div class="ctx-item" data-act="open_app">🚀 打开发布工具</div>
+    <div class="ctx-item" data-act="update_auth">🔗 关联登陆状态</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item" data-act="create_fenshen">➕ 以此创建分身</div>
+    <div class="ctx-item danger" data-act="delete">🚮 删除项目</div>
+</div>
+
+<!-- ===== 弹窗 ===== -->
+<div id="modalTag" class="modal-overlay hidden">
+    <div class="modal-box">
+        <h3>修改账号标记</h3>
+        <p id="modalTagTitle" style="color:var(--text-dim);font-size:0.82rem;margin-bottom:8px;"></p>
+        <select id="modalTagSelect" class="filter-select" style="width:100%"></select>
+        <div class="modal-actions">
+            <button class="btn" onclick="closeModal('modalTag')">取消</button>
+            <button class="btn primary" onclick="saveModalTag()">保存</button>
+        </div>
+    </div>
+</div>
+
+<div id="modalStatus" class="modal-overlay hidden">
+    <div class="modal-box">
+        <h3>修改小说状态</h3>
+        <p id="modalStatusTitle" style="color:var(--text-dim);font-size:0.82rem;margin-bottom:8px;"></p>
+        <select id="modalStatusSelect" class="filter-select" style="width:100%"></select>
+        <div class="modal-actions">
+            <button class="btn" onclick="closeModal('modalStatus')">取消</button>
+            <button class="btn primary" onclick="saveModalStatus()">保存</button>
+        </div>
+    </div>
+</div>
+
+<div id="modalManageTags" class="modal-overlay hidden">
+    <div class="modal-box">
+        <h3>管理账号标记</h3>
+        <div id="modalTagList" style="margin-bottom:10px;"></div>
+        <input type="text" id="modalNewTag" placeholder="输入新标记，回车添加…">
+        <div class="modal-actions">
+            <button class="btn" onclick="closeModal('modalManageTags')">关闭</button>
+        </div>
+    </div>
+</div>
+
+<div id="modalManageStatuses" class="modal-overlay hidden">
+    <div class="modal-box">
+        <h3>管理小说状态</h3>
+        <div id="modalStatusList" style="margin-bottom:10px;"></div>
+        <input type="text" id="modalNewStatus" placeholder="输入新状态，回车添加…">
+        <div class="modal-actions">
+            <button class="btn" onclick="closeModal('modalManageStatuses')">关闭</button>
+        </div>
+    </div>
+</div>
+
+<div id="modalFenshen" class="modal-overlay hidden">
+    <div class="modal-box">
+        <h3>创建新分身</h3>
+        <label style="font-size:0.8rem;color:var(--text-dim);">模板项目</label>
+        <select id="fenshenTemplate" class="filter-select" style="width:100%"></select>
+        <label style="font-size:0.8rem;color:var(--text-dim);">新书名</label>
+        <input type="text" id="fenshenName" placeholder="输入新书名…">
+        <div class="modal-actions">
+            <button class="btn" onclick="closeModal('modalFenshen')">取消</button>
+            <button class="btn primary" onclick="doCreateFenshen()">创建</button>
+        </div>
+    </div>
+</div>
+
+<div id="modalUpdateApps" class="modal-overlay hidden">
+    <div class="modal-box">
+        <h3>一键更新 App</h3>
+        <p style="font-size:0.8rem;color:var(--text-dim);margin-bottom:8px;">选择新的 app.exe，将硬链接到所有项目。</p>
+        <input type="file" id="updateAppFile" accept=".exe">
+        <div class="modal-actions">
+            <button class="btn" onclick="closeModal('modalUpdateApps')">取消</button>
+            <button class="btn primary" onclick="doUpdateApps()">更新全部</button>
+        </div>
+    </div>
+</div>
+
+<!-- 弹窗: 修改发布计划 -->
+<div id="modalConfig" class="modal-overlay hidden">
+    <div class="modal-box" style="max-width:560px;">
+        <h3>修改发布计划</h3>
+        <p id="modalConfigTitle" style="color:var(--text-dim);font-size:0.82rem;margin-bottom:10px;"></p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+            <div>
+                <label style="font-size:0.78rem;color:var(--text-dim);">发布模式</label>
+                <select id="cfgPublishMode" class="filter-select" style="width:100%">
+                    <option value="定时发布">定时发布</option>
+                    <option value="间隔发布">间隔发布</option>
+                </select>
+            </div>
+            <div>
+                <label style="font-size:0.78rem;color:var(--text-dim);">发布时间</label>
+                <input type="time" id="cfgPublishTime" class="filter-select" style="width:100%">
+            </div>
+            <div>
+                <label style="font-size:0.78rem;color:var(--text-dim);">每日章节数 (-1=按字数)</label>
+                <input type="number" id="cfgDailyNum" class="filter-select" style="width:100%">
+            </div>
+            <div>
+                <label style="font-size:0.78rem;color:var(--text-dim);">每日字数</label>
+                <input type="number" id="cfgDailyCount" class="filter-select" style="width:100%">
+            </div>
+            <div>
+                <label style="font-size:0.78rem;color:var(--text-dim);">间隔模式 (天/余数)</label>
+                <input type="text" id="cfgInterval" class="filter-select" style="width:100%" placeholder="如: 1/0">
+            </div>
+            <div>
+                <label style="font-size:0.78rem;color:var(--text-dim);">发布平台</label>
+                <select id="cfgPlate" class="filter-select" style="width:100%">
+                    <option>番茄</option><option>起点</option><option>七猫</option>
+                    <option>纵横</option><option>飞卢</option><option>微信</option>
+                    <option>书旗</option><option>晋江</option><option>息壤</option><option>其他</option>
+                </select>
+            </div>
+            <div>
+                <label style="font-size:0.78rem;color:var(--text-dim);">剩余章节数</label>
+                <input type="number" id="cfgNumRemain" class="filter-select" style="width:100%">
+            </div>
+            <div>
+                <label style="font-size:0.78rem;color:var(--text-dim);">剩余字数</label>
+                <input type="number" id="cfgCountRemain" class="filter-select" style="width:100%">
+            </div>
+            <div style="grid-column:1/-1;display:flex;gap:16px;">
+                <label class="checkbox-label"><input type="checkbox" id="cfgNeatIndex"> 整齐索引</label>
+                <label class="checkbox-label"><input type="checkbox" id="cfgDangerCheck"> 危险预检</label>
+            </div>
+        </div>
+        <div class="modal-actions">
+            <button class="btn" onclick="closeModal('modalConfig')">取消</button>
+            <button class="btn primary" onclick="saveModalConfig()">保存</button>
+        </div>
+    </div>
+</div>
+
+<!-- 弹窗: 章节列表 -->
+<div id="modalChapters" class="modal-overlay hidden">
+    <div class="modal-box" style="width:520px;max-width:95vw;max-height:80vh;display:flex;flex-direction:column;">
+        <h3 id="modalChaptersTitle" style="flex-shrink:0;">章节列表</h3>
+        <div id="chapterStats" style="font-size:0.78rem;color:var(--text-dim);margin-bottom:8px;flex-shrink:0;"></div>
+        <div style="overflow-y:auto;flex:1;min-height:200px;">
+            <table style="width:100%;font-size:0.78rem;border-collapse:collapse;table-layout:fixed;min-width:0;">
+                <thead>
+                    <tr>
+                        <th style="width:60%;text-align:left;">章名</th>
+                        <th style="width:22%;text-align:right;">字数</th>
+                        <th style="width:18%;text-align:center;">编辑</th>
+                    </tr>
+                </thead>
+                <tbody id="chapterListBody"></tbody>
+            </table>
+        </div>
+        <div style="flex-shrink:0;margin-top:10px;display:flex;gap:10px;align-items:center;">
+            <span style="font-size:0.76rem;color:var(--text-dim);white-space:nowrap;">章节区间</span>
+            <input type="number" id="chapterRangeFrom" class="filter-select" style="width:80px;text-align:center;" min="1" placeholder="起" onchange="calcChapterRange()">
+            <span style="color:var(--text-dim);">—</span>
+            <input type="number" id="chapterRangeTo" class="filter-select" style="width:80px;text-align:center;" min="1" placeholder="止" onchange="calcChapterRange()">
+            <span id="chapterRangeStats" style="font-size:0.76rem;color:var(--text-dim);margin-left:auto;"></span>
+            <button class="btn" onclick="closeModal('modalChapters')">关闭</button>
+        </div>
+        <div style="flex-shrink:0;margin-top:8px;display:flex;gap:6px;">
+            <button class="btn" onclick="importChapters()" style="font-size:0.72rem;">📥 导入章节</button>
+            <button class="btn" onclick="exportChapters()" style="font-size:0.72rem;">📤 导出章节</button>
+        </div>
+    </div>
+</div>
+
+<script>
+const API = '';
+let novelData = [];
+let userMarks = { account_tags: [], novel_statuses: [], novels: {} };
+let logPollTimer = null;
+let logIndex = 0;
+let ctxTarget = null; // 右键目标书名
+
+// ==================== 初始化 ====================
+async function init() {
+    loadConfig();
+    initSidebarResizer();
+    await refreshData();
+    startLogPolling();
+    startAutoRefresh();
+    initCtxMenu();
+}
+
+async function apiGet(path) {
+    const r = await fetch(API + path);
+    return r.json();
+}
+async function apiPost(path, data) {
+    const r = await fetch(API + path, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+    });
+    return r.json();
+}
+
+async function refreshData() {
+    try {
+        const [novels, marks] = await Promise.all([
+            apiGet('/api/novels'),
+            apiGet('/api/marks')
+        ]);
+        novelData = novels || [];
+        userMarks = marks || { account_tags: [], novel_statuses: [], novels: {} };
+        updateFilterOptions();
+        renderTable();
+        toast('列表已刷新', 'info');
+    } catch (e) {
+        toast('刷新失败: ' + e.message, 'error');
+    }
+}
+
+let _refreshing = false;
+async function refreshDataSilent() {
+    if (_refreshing) return;
+    _refreshing = true;
+    try {
+        const [novels, marks] = await Promise.all([
+            apiGet('/api/novels'),
+            apiGet('/api/marks')
+        ]);
+        novelData = novels || [];
+        userMarks = marks || { account_tags: [], novel_statuses: [], novels: {} };
+        updateFilterOptions();
+        renderTable();
+    } catch (e) {}
+    _refreshing = false;
+}
+
+function loadConfig() {
+    try {
+        const c = JSON.parse(localStorage.getItem('managerConfig') || '{}');
+        document.getElementById('headlessCheck').checked = c.headless || false;
+        document.getElementById('singleThreadCheck').checked = c.singleThread || false;
+        document.getElementById('concurrentNum').value = c.maxConcurrent || 5;
+        updateConcurrentVisibility();
+        if (c.theme) {
+            document.getElementById('themeSelect').value = c.theme;
+            document.documentElement.setAttribute('data-theme', c.theme);
+        }
+    } catch (e) {}
+}
+function saveConfig() {
+    const singleThread = document.getElementById('singleThreadCheck').checked;
+    const maxConcurrent = parseInt(document.getElementById('concurrentNum').value) || 5;
+    localStorage.setItem('managerConfig', JSON.stringify({
+        headless: document.getElementById('headlessCheck').checked,
+        singleThread: singleThread,
+        maxConcurrent: maxConcurrent,
+        theme: document.getElementById('themeSelect').value
+    }));
+    updateConcurrentVisibility();
+    // 同步到服务端
+    apiPost('/api/config', { max_concurrent: maxConcurrent });
+}
+function updateConcurrentVisibility() {
+    const singleThread = document.getElementById('singleThreadCheck').checked;
+    document.getElementById('concurrentLabel').style.display = singleThread ? 'none' : 'inline-flex';
+}
+
+function switchTheme(name) {
+    document.documentElement.setAttribute('data-theme', name);
+    saveConfig();
+}
+
+async function shutdownServer() {
+    if (!confirm('确定要退出服务端吗？\n退出后网页将自动关闭。')) return;
+    try {
+        await apiPost('/api/shutdown', {});
+    } catch (e) {}
+    window.close();
+}
+
+// ==================== 布局拖拽 ====================
+function initSidebarResizer() {
+    const resizer = document.getElementById('sidebarResizer');
+    const sidebar = document.querySelector('.log-sidebar');
+    let startX, startW;
+
+    resizer.addEventListener('mousedown', (e) => {
+        startX = e.clientX;
+        startW = sidebar.offsetWidth;
+        resizer.classList.add('active');
+        document.body.style.cursor = 'col-resize';
+        document.body.style.userSelect = 'none';
+
+        const onMove = (ev) => {
+            const delta = startX - ev.clientX;
+            const newW = Math.max(200, Math.min(600, startW + delta));
+            sidebar.style.width = newW + 'px';
+            localStorage.setItem('sidebarWidth', newW);
+        };
+        const onUp = () => {
+            resizer.classList.remove('active');
+            document.body.style.cursor = '';
+            document.body.style.userSelect = '';
+            document.removeEventListener('mousemove', onMove);
+            document.removeEventListener('mouseup', onUp);
+        };
+        document.addEventListener('mousemove', onMove);
+        document.addEventListener('mouseup', onUp);
+    });
+
+    const saved = parseInt(localStorage.getItem('sidebarWidth'));
+    if (saved && saved >= 200) sidebar.style.width = saved + 'px';
+}
+
+const COL_NAMES = ['平台','书名','总章节','已发布','已上传字数','发布计划','上次发布','账号标记','小说状态'];
+const COL_DEFAULTS = [70, 150, 55, 55, 75, 75, 95, 85, 75];
+
+function getColWidths() {
+    try {
+        const saved = JSON.parse(localStorage.getItem('colWidths'));
+        if (saved && Array.isArray(saved) && saved.length === COL_NAMES.length) return saved;
+    } catch(e) {}
+    return [...COL_DEFAULTS];
+}
+
+function saveColWidths(w) { localStorage.setItem('colWidths', JSON.stringify(w)); }
+
+function initColumnResizers() {
+    const thead = document.querySelector('.table-panel thead tr');
+    if (!thead) return;
+    const ths = thead.querySelectorAll('th');
+    const widths = getColWidths();
+
+    // apply saved widths to header cells
+    ths.forEach((th, i) => {
+        th.style.width = widths[i] + 'px';
+        // remove old resizer
+        th.querySelector('.col-resizer')?.remove();
+        const r = document.createElement('div');
+        r.className = 'col-resizer';
+        th.appendChild(r);
+    });
+
+    // apply widths to data cells
+    const rows = document.querySelectorAll('.table-panel tbody tr');
+    rows.forEach(tr => {
+        const tds = tr.querySelectorAll('td');
+        tds.forEach((td, i) => {
+            if (i < widths.length) td.style.width = widths[i] + 'px';
+        });
+    });
+
+    // set table min-width to sum
+    const total = widths.reduce((a, b) => a + b, 0);
+    const table = document.querySelector('.table-panel table');
+    if (table) table.style.minWidth = total + 'px';
+
+    // drag logic
+    thead.querySelectorAll('.col-resizer').forEach((r, i) => {
+        let startX, startW;
+        r.addEventListener('mousedown', (e) => {
+            e.preventDefault(); e.stopPropagation();
+            startX = e.clientX;
+            startW = widths[i];
+            r.classList.add('active');
+            document.body.style.cursor = 'col-resize';
+            document.body.style.userSelect = 'none';
+            const onMove = (ev) => {
+                const delta = ev.clientX - startX;
+                const newW = Math.max(30, Math.min(400, startW + delta));
+                widths[i] = newW;
+                ths[i].style.width = newW + 'px';
+                document.querySelectorAll('.table-panel tbody tr').forEach(tr => {
+                    const td = tr.querySelectorAll('td')[i];
+                    if (td) td.style.width = newW + 'px';
+                });
+            };
+            const onUp = () => {
+                r.classList.remove('active');
+                document.body.style.cursor = '';
+                document.body.style.userSelect = '';
+                saveColWidths(widths);
+                document.removeEventListener('mousemove', onMove);
+                document.removeEventListener('mouseup', onUp);
+            };
+            document.addEventListener('mousemove', onMove);
+            document.addEventListener('mouseup', onUp);
+        });
+    });
+}
+
+// ==================== 筛选 ====================
+function updateFilterOptions() {
+    const af = document.getElementById('accountFilter');
+    const sf = document.getElementById('statusFilter');
+    const savedAccount = af.value;
+    const savedStatus = sf.value;
+    const tags = userMarks.account_tags || [];
+    const statuses = userMarks.novel_statuses || [];
+    af.innerHTML = '<option value="">全部</option>' + tags.map(t => `<option>${esc(t)}</option>`).join('');
+    sf.innerHTML = '<option value="">全部</option>' + statuses.map(s => `<option>${esc(s)}</option>`).join('');
+    if (tags.includes(savedAccount)) af.value = savedAccount;
+    if (statuses.includes(savedStatus)) sf.value = savedStatus;
+}
+
+function getFilteredData() {
+    const af = document.getElementById('accountFilter').value;
+    const sf = document.getElementById('statusFilter').value;
+    const redOnly = document.getElementById('redOnlyCheck').checked;
+    return novelData.filter(n => {
+        const title = n.title || n.project_name || '';
+        const marks = userMarks.novels[title] || {};
+        const tag = marks.account_tag || n.novel_writer || '佚名';
+        const status = marks.status || n.novel_status || '未知状态';
+        if (af && tag !== af) return false;
+        if (sf && status !== sf) return false;
+        if (redOnly && getRowColor(n) !== 'c-red') return false;
+        return true;
+    });
+}
+
+// ==================== 行颜色 ====================
+function getRowColor(n) {
+    const title = n.title || n.project_name || '';
+    const marks = userMarks.novels[title] || {};
+    const status = marks.status || n.novel_status || '';
+    const lastDate = n.last_publish_date || '';
+    const dailyPlan = n.daily_plan || '';
+    const planStatus = n.plan_status !== undefined ? n.plan_status : true;
+    if (status === '待创建' || status === '未设置' || status === '已完结') return 'c-gray';
+    if (lastDate && lastDate !== '从未发布') {
+        try {
+            // 显式解析为本地午夜（避免 UTC 时区偏斜），now 保留时间以匹配 Python .days 截断行为
+            const [y, m, d] = lastDate.split('-').map(Number);
+            const pubDate = new Date(y, m - 1, d);
+            const now = new Date();
+            const diffDays = Math.floor((pubDate - now) / 86400000);
+            let intervalStatus = false;
+            if (dailyPlan && dailyPlan.includes('/')) {
+                const parts = dailyPlan.split('/');
+                if (parts.length >= 3) {
+                    const interval = parseInt(parts[1]) || 1;
+                    const remainder = parseInt(parts[2]) || 0;
+                    // 用 UTC 序数日（对齐 Python toordinal，不受时区影响）
+                    const todayEpoch = Math.floor(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()) / 86400000);
+                    const ordinal = todayEpoch + 719163;
+                    if ((ordinal % interval) === remainder) intervalStatus = true;
+                }
+            }
+            // 红：需要发布（对齐服务端 batch_action 判定）
+            if (diffDays <= -2 && intervalStatus) return 'c-red';
+            // 黄：近日已发布且计划完成
+            if (diffDays < 3 && diffDays > -2 && planStatus === true) return 'c-yellow';
+            // 灰：久远未发布且今天不需要发
+            if (diffDays < -2 && !intervalStatus) return 'c-gray';
+        } catch(e) {}
+    }
+    if (status === '全勤中') return 'c-green';
+    if (['验证中','书测中','待填写合同','待签约'].includes(status)) return 'c-blue';
+    return 'c-default';
+}
+
+// ==================== 渲染表格 ====================
+function renderTable() {
+    const filtered = getFilteredData();
+    document.getElementById('rowCount').textContent = `共 ${filtered.length} 条`;
+    const tbody = document.getElementById('tableBody');
+    tbody.innerHTML = filtered.map((n, idx) => {
+        const title = n.title || n.project_name || '未知';
+        const marks = userMarks.novels[title] || {};
+        const tag = marks.account_tag || n.novel_writer || '佚名';
+        const status = marks.status || n.novel_status || '未知状态';
+        const cls = getRowColor(n);
+        const words = n.total_words ? Number(n.total_words).toLocaleString('zh-CN') : '0';
+        return `<tr class="${cls}" data-title="${esc(title)}">
+            <td>${esc(n.platform || '未知')}</td>
+            <td style="font-weight:700;">${esc(title)}</td>
+            <td><span class="cell-tag" data-act="chapters" data-title="${esc(title)}" style="color:var(--text);">${n.total_chapters || 0}</span></td>
+            <td>${n.published_chapters || 0}</td>
+            <td>${words}</td>
+            <td><span class="cell-tag" data-act="config" data-title="${esc(title)}">${esc(n.daily_plan || '未设置')}</span></td>
+            <td>${esc(n.last_publish_date || '从未发布')}</td>
+            <td><span class="cell-tag" data-act="tag" data-title="${esc(title)}">${esc(tag)}</span></td>
+            <td><span class="cell-status" data-act="status" data-title="${esc(title)}">${esc(status)}</span></td>
+        </tr>`;
+    }).join('');
+
+    // 点击标记/状态
+    tbody.querySelectorAll('.cell-tag').forEach(el => {
+        const act = el.dataset.act;
+        const title = el.dataset.title;
+        el.addEventListener('click', e => {
+            e.stopPropagation();
+            if (act === 'tag') editTag(title);
+            else if (act === 'status') editStatus(title);
+            else if (act === 'config') editConfig(title);
+            else if (act === 'chapters') showChapters(title);
+        });
+    });
+    tbody.querySelectorAll('.cell-status').forEach(el => {
+        el.addEventListener('click', e => { e.stopPropagation(); editStatus(el.dataset.title); });
+    });
+
+    // 右键菜单
+    tbody.querySelectorAll('tr').forEach(tr => {
+        tr.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+            // 取消其他选中
+            tbody.querySelectorAll('tr.selected').forEach(r => r.classList.remove('selected'));
+            this.classList.add('selected');
+            ctxTarget = this.dataset.title;
+            showCtxMenu(e.clientX, e.clientY);
+        });
+    });
+
+    initColumnResizers();
+}
+
+// ==================== 右键菜单 ====================
+function initCtxMenu() {
+    const menu = document.getElementById('ctxMenu');
+    menu.querySelectorAll('.ctx-item').forEach(item => {
+        item.addEventListener('click', function() {
+            const act = this.dataset.act;
+            if (act === 'delete') {
+                deleteNovel(ctxTarget);
+            } else if (act === 'open_folder') {
+                apiPost('/api/open_folder', { title: ctxTarget }).then(r => toast(r.message, r.success ? 'success' : 'error'));
+            } else if (act === 'open_app') {
+                apiPost('/api/open_app', { title: ctxTarget }).then(r => toast(r.message, r.success ? 'success' : 'error'));
+            } else if (act === 'update_auth') {
+                apiPost('/api/update_auth', { title: ctxTarget }).then(r => toast(r.message, r.success ? 'success' : 'error'));
+            } else if (act === 'create_fenshen') {
+                createFenshenFromCtx(ctxTarget);
+            } else {
+                singleAction(ctxTarget, act);
+            }
+            hideCtxMenu();
+        });
+    });
+    document.addEventListener('click', hideCtxMenu);
+    document.addEventListener('contextmenu', function(e) {
+        if (!e.target.closest('tr')) hideCtxMenu();
+    });
+}
+
+function showCtxMenu(x, y) {
+    const menu = document.getElementById('ctxMenu');
+    menu.style.display = 'block';
+    menu.style.left = Math.min(x, window.innerWidth - 180) + 'px';
+    menu.style.top = Math.min(y, window.innerHeight - menu.offsetHeight - 10) + 'px';
+}
+
+function hideCtxMenu() {
+    document.getElementById('ctxMenu').style.display = 'none';
+}
+
+// ==================== 操作 ====================
+async function singleAction(title, action) {
+    const headless = document.getElementById('headlessCheck').checked;
+    const singleThread = document.getElementById('singleThreadCheck').checked;
+    try {
+        const r = await apiPost('/api/action', { title, action, headless, single_thread: singleThread });
+        toast(r.message || '已执行', r.success ? 'success' : 'error');
+        await refreshDataSilent();
+    } catch (e) {
+        toast('请求失败: ' + e.message, 'error');
+    }
+}
+
+async function batchAction(action) {
+    const af = document.getElementById('accountFilter').value;
+    const sf = document.getElementById('statusFilter').value;
+    const headless = document.getElementById('headlessCheck').checked;
+    const singleThread = document.getElementById('singleThreadCheck').checked;
+    if (!confirm(`确定要对当前筛选结果执行「${action}」吗？`)) return;
+    try {
+        const r = await apiPost('/api/batch', { action, account_tag: af, status: sf, headless, single_thread: singleThread });
+        toast(`已提交 ${(r.results||[]).length} 项`, 'success');
+        await refreshDataSilent();
+    } catch (e) {
+        toast('请求失败: ' + e.message, 'error');
+    }
+}
+
+async function deleteNovel(title) {
+    if (!confirm(`确定删除「${title}」？\n将永久删除小说文件夹和项目配置！`)) return;
+    try {
+        const r = await apiPost('/api/delete', { title });
+        toast(r.message, r.success ? 'success' : 'error');
+        if (r.success) await refreshData();
+    } catch (e) {
+        toast('请求失败: ' + e.message, 'error');
+    }
+}
+
+// ==================== 弹窗 ====================
+function editTag(title) {
+    document.getElementById('modalTagTitle').textContent = `书名: ${title}`;
+    const select = document.getElementById('modalTagSelect');
+    select.innerHTML = (userMarks.account_tags || []).map(t => `<option>${esc(t)}</option>`).join('');
+    const cur = userMarks.novels[title]?.account_tag || '';
+    if (cur) select.value = cur;
+    select.dataset.title = title;
+    document.getElementById('modalTag').classList.remove('hidden');
+}
+
+async function saveModalTag() {
+    const title = document.getElementById('modalTagSelect').dataset.title;
+    const value = document.getElementById('modalTagSelect').value;
+    if (!userMarks.novels[title]) userMarks.novels[title] = {};
+    userMarks.novels[title].account_tag = value;
+    await apiPost('/api/marks', userMarks);
+    renderTable();
+    closeModal('modalTag');
+}
+
+function editStatus(title) {
+    document.getElementById('modalStatusTitle').textContent = `书名: ${title}`;
+    const select = document.getElementById('modalStatusSelect');
+    select.innerHTML = (userMarks.novel_statuses || []).map(s => `<option>${esc(s)}</option>`).join('');
+    const cur = userMarks.novels[title]?.status || '';
+    if (cur) select.value = cur;
+    select.dataset.title = title;
+    document.getElementById('modalStatus').classList.remove('hidden');
+}
+
+async function saveModalStatus() {
+    const title = document.getElementById('modalStatusSelect').dataset.title;
+    const value = document.getElementById('modalStatusSelect').value;
+    if (!userMarks.novels[title]) userMarks.novels[title] = {};
+    userMarks.novels[title].status = value;
+    await apiPost('/api/marks', userMarks);
+    renderTable();
+    closeModal('modalStatus');
+}
+
+function manageTags() {
+    renderTagList();
+    document.getElementById('modalManageTags').classList.remove('hidden');
+    document.getElementById('modalNewTag').focus();
+}
+function renderTagList() {
+    const c = document.getElementById('modalTagList');
+    c.innerHTML = (userMarks.account_tags || []).map((t, i) => `
+        <div class="tag-item">
+            <span>${esc(t)}</span>
+            <button class="btn danger" data-del-tag="${i}" style="font-size:0.7rem;padding:2px 8px;">删除</button>
+        </div>
+    `).join('') || '<p style="color:var(--text-dim);font-size:0.8rem;">暂无标记</p>';
+    c.querySelectorAll('[data-del-tag]').forEach(b => {
+        b.addEventListener('click', async function() {
+            userMarks.account_tags.splice(parseInt(this.dataset.delTag), 1);
+            await apiPost('/api/marks', userMarks);
+            updateFilterOptions(); renderTagList(); renderTable();
+        });
+    });
+}
+
+function manageStatuses() {
+    renderStatusList();
+    document.getElementById('modalManageStatuses').classList.remove('hidden');
+    document.getElementById('modalNewStatus').focus();
+}
+function renderStatusList() {
+    const c = document.getElementById('modalStatusList');
+    c.innerHTML = (userMarks.novel_statuses || []).map((s, i) => `
+        <div class="tag-item">
+            <span>${esc(s)}</span>
+            <button class="btn danger" data-del-status="${i}" style="font-size:0.7rem;padding:2px 8px;">删除</button>
+        </div>
+    `).join('') || '<p style="color:var(--text-dim);font-size:0.8rem;">暂无状态</p>';
+    c.querySelectorAll('[data-del-status]').forEach(b => {
+        b.addEventListener('click', async function() {
+            userMarks.novel_statuses.splice(parseInt(this.dataset.delStatus), 1);
+            await apiPost('/api/marks', userMarks);
+            updateFilterOptions(); renderStatusList(); renderTable();
+        });
+    });
+}
+
+document.getElementById('modalNewTag')?.addEventListener('keydown', async function(e) {
+    if (e.key === 'Enter') {
+        const v = this.value.trim();
+        if (v && !(userMarks.account_tags || []).includes(v)) {
+            if (!userMarks.account_tags) userMarks.account_tags = [];
+            userMarks.account_tags.push(v); userMarks.account_tags.sort();
+            await apiPost('/api/marks', userMarks);
+            updateFilterOptions(); renderTagList(); renderTable();
+        }
+        this.value = '';
+    }
+});
+document.getElementById('modalNewStatus')?.addEventListener('keydown', async function(e) {
+    if (e.key === 'Enter') {
+        const v = this.value.trim();
+        if (v && !(userMarks.novel_statuses || []).includes(v)) {
+            if (!userMarks.novel_statuses) userMarks.novel_statuses = [];
+            userMarks.novel_statuses.push(v); userMarks.novel_statuses.sort();
+            await apiPost('/api/marks', userMarks);
+            updateFilterOptions(); renderStatusList(); renderTable();
+        }
+        this.value = '';
+    }
+});
+
+function createFenshen() {
+    const select = document.getElementById('fenshenTemplate');
+    select.innerHTML = novelData.map(n => `<option>${esc(n.title || n.project_name || '')}</option>`).join('');
+    document.getElementById('fenshenName').value = '';
+    document.getElementById('modalFenshen').classList.remove('hidden');
+}
+async function doCreateFenshen() {
+    const template = document.getElementById('fenshenTemplate').value;
+    const name = document.getElementById('fenshenName').value.trim();
+    if (!name) { toast('请输入新书名', 'error'); return; }
+    try {
+        const r = await apiPost('/api/create_fenshen', { template_title: template, new_name: name });
+        toast(r.message, r.success ? 'success' : 'error');
+        if (r.success) { closeModal('modalFenshen'); await refreshData(); }
+    } catch (e) { toast('请求失败: ' + e.message, 'error'); }
+}
+
+function updateApps() { document.getElementById('modalUpdateApps').classList.remove('hidden'); }
+async function doUpdateApps() {
+    const file = document.getElementById('updateAppFile').files[0];
+    if (!file) { toast('请选择 app.exe', 'error'); return; }
+    try {
+        const reader = new FileReader();
+        const base64 = await new Promise((resolve, reject) => {
+            reader.onload = () => resolve(reader.result.split(',')[1]);
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+        });
+        const r = await apiPost('/api/update_apps', { file_name: file.name, file_data: base64 });
+        toast(r.message, r.success ? 'success' : 'error');
+        closeModal('modalUpdateApps');
+    } catch (e) { toast('请求失败: ' + e.message, 'error'); }
+}
+
+async function publishNextDay() {
+    if (!confirm('「发布次日」将等待到跨天后自动执行批量发布。确定启动？')) return;
+    try {
+        const r = await apiPost('/api/publish_next_day', {});
+        toast(r.message, r.success ? 'success' : 'error');
+    } catch (e) { toast('请求失败: ' + e.message, 'error'); }
+}
+
+async function createFenshenFromCtx(templateTitle) {
+    const newName = prompt(`以「${templateTitle}」为模版创建新分身\n请输入新书名：`);
+    if (!newName || !newName.trim()) return;
+    try {
+        const r = await apiPost('/api/create_fenshen', { template_title: templateTitle, new_name: newName.trim() });
+        toast(r.message, r.success ? 'success' : 'error');
+        if (r.success) await refreshData();
+    } catch (e) { toast('请求失败: ' + e.message, 'error'); }
+}
+
+let editingConfigTitle = null;
+
+async function editConfig(title) {
+    try {
+        const r = await apiPost('/api/read_config', { title });
+        if (!r.success) { toast(r.message, 'error'); return; }
+        editingConfigTitle = title;
+        const cfg = r.config;
+        document.getElementById('modalConfigTitle').textContent = `书名: ${title}`;
+        document.getElementById('cfgPublishMode').value = (cfg.Settings && cfg.Settings.publish_mode) || '定时发布';
+        document.getElementById('cfgPublishTime').value = (cfg.Settings && cfg.Settings.publish_time) || '00:00';
+        document.getElementById('cfgDailyNum').value = (cfg.Settings && cfg.Settings.daily_publish_num) || '-1';
+        document.getElementById('cfgDailyCount').value = (cfg.Settings && cfg.Settings.daily_publish_count) || '0';
+        document.getElementById('cfgInterval').value = (cfg.Settings && cfg.Settings.interval_publish_mode) || '1/0';
+        document.getElementById('cfgPlate').value = (cfg.Settings && cfg.Settings.publish_plate) || '番茄';
+        document.getElementById('cfgNeatIndex').checked = (cfg.Settings && cfg.Settings.neat_index === 'True');
+        document.getElementById('cfgDangerCheck').checked = (cfg.Settings && cfg.Settings.danger_pre_check === 'True');
+        document.getElementById('cfgNumRemain').value = (cfg.History && cfg.History.daily_publish_num_remain) || '0';
+        document.getElementById('cfgCountRemain').value = (cfg.History && cfg.History.daily_publish_count_remain) || '0';
+        document.getElementById('modalConfig').classList.remove('hidden');
+    } catch (e) { toast('读取配置失败: ' + e.message, 'error'); }
+}
+
+async function saveModalConfig() {
+    if (!editingConfigTitle) return;
+    const updates = {
+        Settings: {
+            publish_mode: document.getElementById('cfgPublishMode').value,
+            publish_time: document.getElementById('cfgPublishTime').value,
+            daily_publish_num: document.getElementById('cfgDailyNum').value,
+            daily_publish_count: document.getElementById('cfgDailyCount').value,
+            interval_publish_mode: document.getElementById('cfgInterval').value,
+            publish_plate: document.getElementById('cfgPlate').value,
+            neat_index: document.getElementById('cfgNeatIndex').checked ? 'True' : 'False',
+            danger_pre_check: document.getElementById('cfgDangerCheck').checked ? 'True' : 'False',
+        },
+        History: {
+            daily_publish_num_remain: document.getElementById('cfgNumRemain').value,
+            daily_publish_count_remain: document.getElementById('cfgCountRemain').value,
+        }
+    };
+    try {
+        const r = await apiPost('/api/update_config', { title: editingConfigTitle, updates });
+        toast(r.message, r.success ? 'success' : 'error');
+        if (r.success) {
+            closeModal('modalConfig');
+            await refreshDataSilent();
+        }
+    } catch (e) { toast('保存失败: ' + e.message, 'error'); }
+}
+
+let chapterData = [];
+let chapterPath = '';
+let chapterTitle = '';
+
+async function showChapters(title) {
+    try {
+        chapterTitle = title;
+        const r = await apiPost('/api/chapters', { title });
+        if (!r.success) { toast(r.message, 'error'); return; }
+        chapterData = r.chapters || [];
+        chapterPath = r.path || '';
+        document.getElementById('modalChaptersTitle').textContent = `章节列表 — ${title}`;
+        const totalWords = chapterData.reduce((s, c) => s + (c.words || 0), 0);
+        document.getElementById('chapterStats').textContent = `共 ${chapterData.length} 章，总字数 ${totalWords.toLocaleString('zh-CN')}`;
+        document.getElementById('chapterRangeFrom').value = '';
+        document.getElementById('chapterRangeTo').value = '';
+        document.getElementById('chapterRangeStats').textContent = '';
+        renderChapterList();
+        document.getElementById('modalChapters').classList.remove('hidden');
+    } catch (e) { toast('加载章节失败: ' + e.message, 'error'); }
+}
+
+function renderChapterList() {
+    const tbody = document.getElementById('chapterListBody');
+    tbody.innerHTML = chapterData.map((c, i) => `
+        <tr class="${c.error ? 'c-red' : ''}">
+            <td style="text-align:left;text-overflow:ellipsis;white-space:nowrap;">${esc(c.title)}</td>
+            <td style="text-align:right;white-space:nowrap;">${c.words ? c.words.toLocaleString('zh-CN') : (c.error ? '失败' : '0')}</td>
+            <td style="text-align:center;">
+                <button class="btn" style="font-size:0.68rem;padding:2px 8px;" onclick="openChapter(${i})">编辑</button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+function calcChapterRange() {
+    const from = parseInt(document.getElementById('chapterRangeFrom').value);
+    const to = parseInt(document.getElementById('chapterRangeTo').value);
+    const el = document.getElementById('chapterRangeStats');
+    if (isNaN(from) || isNaN(to) || from < 1 || to < from) {
+        el.textContent = '';
+        return;
+    }
+    const slice = chapterData.slice(from - 1, to);
+    const total = slice.reduce((s, c) => s + (c.words || 0), 0);
+    el.textContent = `第 ${from}-${to} 章 共 ${slice.length} 章 ${total.toLocaleString('zh-CN')} 字`;
+}
+
+async function openChapter(idx) {
+    const c = chapterData[idx];
+    if (!c || c.error) return;
+    try {
+        const r = await apiPost('/api/open_chapter', { path: chapterPath, name: c.name });
+        if (!r.success) { toast(r.message, 'error'); return; }
+        const content = r.content || '';
+        const newContent = await showChapterEditor(c.name, c.title, content);
+        if (newContent !== null && newContent !== content) {
+            const sr = await apiPost('/api/save_chapter', { path: chapterPath, name: c.name, content: newContent });
+            toast(sr.message, sr.success ? 'success' : 'error');
+            if (sr.success) {
+                // 刷新章节字数
+                const cr = await apiPost('/api/chapters', { title: chapterTitle });
+                if (cr.success) {
+                    chapterData = cr.chapters || [];
+                    const totalWords = chapterData.reduce((s, c) => s + (c.words || 0), 0);
+                    document.getElementById('chapterStats').textContent = `共 ${chapterData.length} 章，总字数 ${totalWords.toLocaleString('zh-CN')}`;
+                    renderChapterList();
+                    calcChapterRange();
+                }
+            }
+        }
+    } catch (e) { toast('操作失败: ' + e.message, 'error'); }
+}
+
+// 简易章节编辑器（用 prompt + 大段文本处理）
+function showChapterEditor(name, title, content) {
+    return new Promise((resolve) => {
+        const overlay = document.createElement('div');
+        overlay.className = 'modal-overlay';
+        overlay.innerHTML = `<div class="modal-box" style="max-width:720px;max-height:85vh;display:flex;flex-direction:column;">
+            <h3>编辑章节 — ${esc(title)}</h3>
+            <p style="font-size:0.75rem;color:var(--text-dim);margin-bottom:6px;">${esc(name)}</p>
+            <textarea id="chapterEditorText" style="flex:1;min-height:350px;width:100%;font-family:Consolas,monospace;font-size:0.78rem;padding:8px;border:1px solid var(--border);border-radius:8px;resize:vertical;"></textarea>
+            <div class="modal-actions">
+                <button class="btn" id="chapterEditorCancel">取消</button>
+                <button class="btn primary" id="chapterEditorSave">保存</button>
+            </div>
+        </div>`;
+        document.body.appendChild(overlay);
+        const ta = overlay.querySelector('#chapterEditorText');
+        ta.value = content;
+        ta.focus();
+        ta.setSelectionRange(ta.value.length, ta.value.length);
+        overlay.querySelector('#chapterEditorCancel').onclick = () => { overlay.remove(); resolve(null); };
+        overlay.querySelector('#chapterEditorSave').onclick = () => { overlay.remove(); resolve(ta.value); };
+        overlay.addEventListener('click', function(e) { if (e.target === overlay) { overlay.remove(); resolve(null); } });
+    });
+}
+
+// ==================== 导入导出章节 ====================
+function importChapters() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.txt';
+    input.onchange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const text = await file.text();
+        textCache = text;
+        try {
+            const r = await apiPost('/api/parse_chapters', { content: text });
+            if (!r.success) { toast(r.message, 'error'); return; }
+            showImportDialog(r.chapters || []);
+        } catch (err) { toast('解析失败: ' + err.message, 'error'); }
+    };
+    input.click();
+}
+
+function showImportDialog(chapters) {
+    const overlay = document.createElement('div');
+    overlay.className = 'modal-overlay';
+    const rows = chapters.map((c, i) =>
+        `<tr><td style="padding:3px 8px;"><label class="checkbox-label"><input type="checkbox" class="import-check" data-idx="${i}" checked> ${esc(c.title)}</label></td><td style="text-align:right;padding:3px 8px;">${(c.words || 0).toLocaleString('zh-CN')}</td></tr>`
+    ).join('');
+    overlay.innerHTML = `<div class="modal-box" style="max-width:550px;max-height:75vh;display:flex;flex-direction:column;">
+        <h3>导入章节 — 共 ${chapters.length} 章</h3>
+        <div style="display:flex;gap:8px;margin-bottom:8px;">
+            <button class="btn" id="importSelAll" style="font-size:0.72rem;">全选</button>
+            <button class="btn" id="importSelNone" style="font-size:0.72rem;">全不选</button>
+            <button class="btn" id="importSelRev" style="font-size:0.72rem;">反选</button>
+        </div>
+        <div style="overflow-y:auto;flex:1;min-height:200px;">
+            <table style="width:100%;font-size:0.78rem;"><tbody>${rows}</tbody></table>
+        </div>
+        <div class="modal-actions">
+            <button class="btn" id="importCancel">取消</button>
+            <button class="btn primary" id="importConfirm">导入选中章节</button>
+        </div>
+    </div>`;
+    document.body.appendChild(overlay);
+    overlay.querySelector('#importCancel').onclick = () => overlay.remove();
+    overlay.querySelector('#importSelAll').onclick = () => overlay.querySelectorAll('.import-check').forEach(cb => cb.checked = true);
+    overlay.querySelector('#importSelNone').onclick = () => overlay.querySelectorAll('.import-check').forEach(cb => cb.checked = false);
+    overlay.querySelector('#importSelRev').onclick = () => overlay.querySelectorAll('.import-check').forEach(cb => cb.checked = !cb.checked);
+    overlay.querySelector('#importConfirm').onclick = async () => {
+        const checked = [...overlay.querySelectorAll('.import-check:checked')].map(cb => parseInt(cb.dataset.idx));
+        if (!checked.length) { toast('请至少选择一章', 'error'); return; }
+        overlay.remove();
+        try {
+            const r = await apiPost('/api/import_chapters', { title: chapterTitle, content: textCache || '', selected: checked });
+            toast(r.message, r.success ? 'success' : 'error');
+            if (r.success) showChapters(chapterTitle);
+        } catch (e) { toast('导入失败: ' + e.message, 'error'); }
+    };
+    overlay.addEventListener('click', function(e) { if (e.target === overlay) overlay.remove(); });
+}
+
+async function exportChapters() {
+    const from = parseInt(document.getElementById('chapterRangeFrom').value) || 1;
+    const to = parseInt(document.getElementById('chapterRangeTo').value) || 0;
+    try {
+        const r = await apiPost('/api/export_chapters', { title: chapterTitle, from, to });
+        if (!r.success) { toast(r.message, 'error'); return; }
+        const blob = new Blob([r.content], { type: 'text/plain;charset=utf-8' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = r.filename || `${chapterTitle}_导出.txt`;
+        a.click();
+        URL.revokeObjectURL(a.href);
+        toast(`已导出 ${r.count} 章`, 'success');
+    } catch (e) { toast('导出失败: ' + e.message, 'error'); }
+}
+
+// 缓存导入文本
+let textCache = '';
+
+function importNovelJson() {
+    const input = document.createElement('input');
+    input.type = 'file'; input.accept = '.json';
+    input.onchange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const text = await file.text();
+        try {
+            const data = JSON.parse(text);
+            if (Array.isArray(data)) {
+                novelData = data;
+                const tags = new Set(userMarks.account_tags || []);
+                const statuses = new Set(userMarks.novel_statuses || []);
+                data.forEach(n => {
+                    if (n.novel_writer && n.novel_writer !== '佚名') tags.add(n.novel_writer);
+                    if (n.novel_status && n.novel_status !== '未设置') statuses.add(n.novel_status);
+                });
+                userMarks.account_tags = [...tags].sort();
+                userMarks.novel_statuses = [...statuses].sort();
+                await apiPost('/api/marks', userMarks);
+                updateFilterOptions(); renderTable();
+                toast(`导入 ${data.length} 条`, 'success');
+            }
+        } catch (err) { toast('解析失败: ' + err.message, 'error'); }
+    };
+    input.click();
+}
+
+function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+document.querySelectorAll('.modal-overlay').forEach(o => {
+    o.addEventListener('click', function(e) { if (e.target === this) closeModal(this.id); });
+});
+
+// ==================== 日志 ====================
+function startLogPolling() {
+    if (logPollTimer) clearInterval(logPollTimer);
+    logPollTimer = setInterval(() => { pollLogs(); pollProgress(); }, 2000);
+    pollLogs();
+    pollProgress();
+}
+async function pollLogs() {
+    try {
+        const logs = await apiGet('/api/logs');
+        if (logs && logs.length > logIndex) {
+            const container = document.getElementById('logContent');
+            const newLogs = logs.slice(logIndex);
+            logIndex = logs.length;
+            container.insertAdjacentHTML('beforeend', newLogs.map(l => `<div class="log-line">${esc(l)}</div>`).join(''));
+            container.scrollTop = container.scrollHeight;
+            while (container.querySelectorAll('.log-line').length > 300) {
+                container.querySelector('.log-line').remove();
+            }
+        }
+    } catch (e) {}
+}
+
+// ==================== 进度 & 自动刷新 ====================
+let lastCompleted = 0, lastTotal = 0, allDoneNotified = false, lastRefreshTs = 0;
+function startAutoRefresh() {
+    // 每 30 秒静默刷新一次列表数据
+    setInterval(refreshDataSilent, 30000);
+}
+async function pollProgress() {
+    try {
+        const p = await apiGet('/api/progress');
+        const badge = document.getElementById('progressBadge');
+        const total = p.total || 0, completed = p.completed || 0;
+        // 检测新批次开始（total 变化或 completed 回退）
+        if (total !== lastTotal || completed < lastCompleted) allDoneNotified = false;
+
+        if (total > 0 && !allDoneNotified) {
+            const pct = Math.round(completed / total * 100);
+            badge.textContent = `任务 ${completed}/${total} (${pct}%)`;
+            badge.classList.remove('hidden');
+            // 有任务完成 → 静默刷新（节流：至少间隔 8 秒）
+            if (completed > lastCompleted && completed < total) {
+                const now = Date.now();
+                if (now - lastRefreshTs > 8000) { refreshDataSilent(); lastRefreshTs = now; }
+            }
+            // 全部完成 -> 通知 + 刷新 + 隐藏徽标
+            if (completed >= total && !allDoneNotified) {
+                toast(`全部 ${total} 个任务已完成`, 'success');
+                refreshDataSilent();
+                allDoneNotified = true;
+                badge.classList.add('hidden');
+            }
+        } else {
+            badge.classList.add('hidden');
+        }
+        lastCompleted = completed;
+        lastTotal = total;
+    } catch (e) {}
+}
+function clearLogs() {
+    document.getElementById('logContent').innerHTML = '';
+    logIndex = 0;
+    apiPost('/api/logs/clear', {});
+}
+
+// ==================== 工具 ====================
+function esc(s) {
+    return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+function toast(msg, type) {
+    const el = document.createElement('div');
+    el.className = `toast ${type}`;
+    el.textContent = msg;
+    document.body.appendChild(el);
+    setTimeout(() => { el.style.opacity = '0'; el.style.transition = 'opacity 0.3s'; }, 3000);
+    setTimeout(() => el.remove(), 3500);
+}
+
+// 拖拽导入
+document.addEventListener('dragover', e => e.preventDefault());
+document.addEventListener('drop', async e => {
+    e.preventDefault();
+    const file = e.dataTransfer.files[0];
+    if (!file || !file.name.endsWith('.json')) return;
+    const text = await file.text();
+    try {
+        const data = JSON.parse(text);
+        if (Array.isArray(data)) {
+            novelData = data;
+            const tags = new Set(userMarks.account_tags || []);
+            const statuses = new Set(userMarks.novel_statuses || []);
+            data.forEach(n => {
+                if (n.novel_writer && n.novel_writer !== '佚名') tags.add(n.novel_writer);
+                if (n.novel_status && n.novel_status !== '未设置') statuses.add(n.novel_status);
+            });
+            userMarks.account_tags = [...tags].sort();
+            userMarks.novel_statuses = [...statuses].sort();
+            await apiPost('/api/marks', userMarks);
+            updateFilterOptions(); renderTable();
+            toast(`导入 ${data.length} 条`, 'success');
+        }
+    } catch (err) { toast('解析失败: ' + err.message, 'error'); }
+});
+
+init();
+</script>
+</body>
+</html>

@@ -61,6 +61,10 @@ pyinstaller app.spec --noconfirm
 ├── tomato.ico              # 应用图标
 ├── app.spec                # PyInstaller 打包配置
 ├── VERSION                 # 当前版本号（发版依据）
+├── manager_server.py       # Web 管理器服务端
+├── manager_web.html        # Web 管理器页面
+├── manager_server.spec     # Web 管理器 PyInstaller 打包配置
+├── favicon.ico             # Web 管理器图标
 └── novel_publisher/        # 核心功能包
     ├── browser.py          # 浏览器连接管理
     ├── navigation.py       # 页面导航与站点定位
@@ -77,6 +81,21 @@ pyinstaller app.spec --noconfirm
 ## 配置说明
 
 首次运行生成 `config.ini`，常用配置项在界面中直接设置即可；`[Update]` 分组用于更新设置。
+
+## Web 管理器
+
+`manager_server.py` 是多项目批量管理服务端：运行后自动打开浏览器，通过 Web 页面（[manager_web.html](manager_web.html)）集中管理所有小说项目，支持批量调用主程序执行发布任务（单任务超时 30 分钟自动终止）、任务队列与日志查看，并带系统托盘。
+
+```bash
+# 启动（默认端口 18765）
+python manager_server.py
+
+# 打包为 exe
+pip install pyinstaller
+pyinstaller manager_server.spec --noconfirm
+```
+
+默认根目录为 `E:\AutoWriter`（不存在时回退到当前目录），项目组织与批量任务的字段约定见页面内提示。
 
 ## 联系与反馈
 
