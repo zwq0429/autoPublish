@@ -1,0 +1,32 @@
+# 运行时数据与用户配置
+config.ini
+auth.json
+签约信息.txt
+*.log
+
+# 用户数据目录
+data/
+downloads/
+logs/
+novel_work/
+.dbg/
+下载的小说/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# 打包产物
+build/
+dist/
+*.exe
+*.exe.new
+
+# IDE / 系统
+.idea/
+.vscode/
+Thumbs.db
+.DS_Store
