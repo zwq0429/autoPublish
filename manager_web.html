@@ -690,11 +690,20 @@
 <div id="modalUpdateApps" class="modal-overlay hidden">
     <div class="modal-box">
         <h3>一键更新 App</h3>
-        <p style="font-size:0.8rem;color:var(--text-dim);margin-bottom:8px;">选择新的 app.exe，将硬链接到所有项目。</p>
+        <p style="font-size:0.8rem;color:var(--text-dim);margin-bottom:8px;">选择新的 app.exe，将硬链接到所有项目（失败时自动复制）。</p>
         <input type="file" id="updateAppFile" accept=".exe">
         <div class="modal-actions">
             <button class="btn" onclick="closeModal('modalUpdateApps')">取消</button>
             <button class="btn primary" onclick="doUpdateApps()">更新全部</button>
+        </div>
+        <hr style="border:none;border-top:1px solid var(--border,#333);margin:14px 0;">
+        <h3 style="font-size:0.95rem;">从 GitHub 自动更新</h3>
+        <p style="font-size:0.8rem;color:var(--text-dim);margin-bottom:8px;">检查 GitHub 最新 Release，自动下载并批量更新（下载走镜像加速）。批量任务执行中不可更新。</p>
+        <p id="ghUpdateInfo" style="font-size:0.8rem;margin-bottom:8px;color:var(--text-dim);">未检查</p>
+        <div class="modal-actions" style="flex-wrap:wrap;">
+            <button class="btn" onclick="checkGithubUpdate()">检查更新</button>
+            <button class="btn primary" id="btnGhUpdateApps" onclick="updateFromGithub('apps')" disabled>更新全部项目 App</button>
+            <button class="btn" id="btnGhUpdateServer" onclick="updateFromGithub('server')" disabled>更新服务端自身</button>
         </div>
     </div>
 </div>
@@ -1353,6 +1362,69 @@ async function doUpdateApps() {
         const r = await apiPost('/api/update_apps', { file_name: file.name, file_data: base64 });
         toast(r.message, r.success ? 'success' : 'error');
         closeModal('modalUpdateApps');
+    } catch (e) { toast('请求失败: ' + e.message, 'error'); }
+}
+
+let ghUpdatePollTimer = null;
+let ghTaskWasRunning = false;
+
+function setGhUpdateInfo(text, ok) {
+    const el = document.getElementById('ghUpdateInfo');
+    el.textContent = text;
+    el.style.color = ok === undefined ? 'var(--text-dim)' : (ok ? 'var(--ok,#4ade80)' : 'var(--error,#f87171)');
+}
+
+async function checkGithubUpdate() {
+    setGhUpdateInfo('检查中...');
+    try {
+        const r = await apiPost('/api/check_update', {});
+        if (!r.success) { setGhUpdateInfo(r.message, false); return; }
+        if (ghUpdatePollTimer) clearTimeout(ghUpdatePollTimer);
+        pollUpdateStatus();
+    } catch (e) { setGhUpdateInfo('请求失败: ' + e.message, false); }
+}
+
+async function pollUpdateStatus() {
+    try {
+        const s = await apiGet('/api/update_status');
+        if (s.task_running) {
+            ghTaskWasRunning = true;
+            setGhUpdateInfo(s.task_msg || '更新执行中...', true);
+            ghUpdatePollTimer = setTimeout(pollUpdateStatus, 2000);
+            return;
+        }
+        if (ghTaskWasRunning) {
+            // 更新任务刚结束，展示最终结果
+            ghTaskWasRunning = false;
+            setGhUpdateInfo(s.task_msg, !s.task_msg.startsWith('更新失败'));
+            return;
+        }
+        if (s.checking) {
+            ghUpdatePollTimer = setTimeout(pollUpdateStatus, 1500);
+            return;
+        }
+        const cr = s.check_result;
+        if (cr && cr.success) {
+            setGhUpdateInfo(`最新版本 ${cr.latest_tag}，当前 ${cr.server_version}` + (cr.has_update ? '，发现新版本！' : '，已是最新'), true);
+            document.getElementById('btnGhUpdateApps').disabled = !cr.has_update;
+            document.getElementById('btnGhUpdateServer').disabled = !cr.has_update;
+        } else if (cr) {
+            setGhUpdateInfo(cr.message, false);
+        }
+    } catch (e) { /* 轮询失败忽略，下次再试 */ }
+}
+
+async function updateFromGithub(target) {
+    const label = target === 'apps' ? '全部项目的 app.exe' : '服务端自身（将自动重启）';
+    if (!confirm(`确定从 GitHub 更新${label}？`)) return;
+    try {
+        const r = await apiPost('/api/update_from_github', { target });
+        toast(r.message, r.success ? 'success' : 'error');
+        if (r.success) {
+            setGhUpdateInfo('更新任务已启动...', true);
+            if (ghUpdatePollTimer) clearTimeout(ghUpdatePollTimer);
+            pollUpdateStatus();
+        }
     } catch (e) { toast('请求失败: ' + e.message, 'error'); }
 }
 

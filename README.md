@@ -86,6 +86,8 @@ pyinstaller app.spec --noconfirm
 
 `manager_server.py` 是多项目批量管理服务端：运行后自动打开浏览器，通过 Web 页面（[manager_web.html](manager_web.html)）集中管理所有小说项目，支持批量调用主程序执行发布任务（单任务超时 30 分钟自动终止）、任务队列与日志查看，并带系统托盘。
 
+管理器内置更新功能：【一键更新 App】弹窗中可检查 GitHub 最新 Release，一键下载并批量更新所有项目的 app.exe（下载走镜像加速，替换优先硬链接、失败自动复制），也可一键更新服务端自身（打包运行时自动替换重启）。批量任务执行期间禁止更新。
+
 ```bash
 # 启动（默认端口 18765）
 python manager_server.py

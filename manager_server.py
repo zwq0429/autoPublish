@@ -13,6 +13,7 @@ import traceback
 import subprocess
 import threading
 import shutil
+import sys
 import webbrowser
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -40,6 +41,19 @@ try:
 except ImportError:
     tray_icon_png = None
 
+try:
+    from novel_publisher.updater import (
+        fetch_latest_version,
+        is_newer,
+        _request_with_mirrors,
+        _download_stream,
+        _run_replace_and_restart,
+        GITHUB_REPO_FULL,
+    )
+    HAS_UPDATER = True
+except ImportError:
+    HAS_UPDATER = False
+
 # 配置日志
 logging.basicConfig(
     level=logging.INFO,
@@ -51,6 +65,7 @@ logging.basicConfig(
 )
 
 PORT = 18765
+SERVER_VERSION = 'v2.2.9'  # 与仓库 VERSION / Release tag 保持一致
 DEFAULT_ROOT_DIR = Path(r"E:\AutoWriter")
 ROOT_DIR = DEFAULT_ROOT_DIR if DEFAULT_ROOT_DIR.is_dir() else Path.cwd()
 DEFAULT_BROWSER_PATH = r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe"
@@ -881,25 +896,11 @@ def delete_project(title):
     return {"success": True, "message": f"已删除: {title}"}
 
 
-def update_all_apps(file_name, file_data):
-    """用上传的 app.exe 更新所有项目"""
-    import base64
-    if not file_data:
-        return {"success": False, "message": "未收到文件数据"}
-    if not file_name.lower().endswith('.exe'):
-        return {"success": False, "message": "只接受 .exe 文件"}
+def apply_app_update(source_app_path):
+    """把指定路径的 app.exe 批量更新到所有项目（硬链接优先，保底复制）
 
-    # 写入临时文件到 ROOT_DIR（与目标同盘，硬链接不能跨盘）
-    tmp_path = ROOT_DIR / f"_tmp_{int(time.time())}_{file_name}"
-    try:
-        with open(tmp_path, 'wb') as tmp:
-            tmp.write(base64.b64decode(file_data))
-        source_app_path = str(tmp_path)
-        logging.info(f"更新APP: 收到文件 {file_name}, 大小 {tmp_path.stat().st_size} 字节, 写入 {source_app_path}")
-    except Exception as e:
-        logging.error(f"更新APP: 文件写入失败: {e}")
-        return {"success": False, "message": f"文件写入失败: {e}"}
-
+    source_app_path 必须与项目目录在同一磁盘卷（硬链接要求），跨卷时自动走复制。
+    """
     success = 0
     fails = []
     for novel in collector.all_novel_info:
@@ -923,17 +924,125 @@ def update_all_apps(file_name, file_data):
                 fails.append(f"{project_name}: {e2}")
                 logging.error(f"更新APP: {project_name} 复制也失败: {e2}")
 
-    # 清理临时文件
-    try:
-        os.unlink(source_app_path)
-    except Exception:
-        pass
-
     msg = f"更新成功 {success} 个"
     if fails:
         msg += f", 失败 {len(fails)} 个: {fails[:3]}{'...' if len(fails) > 3 else ''}"
     logging.info(f"更新APP: {msg}")
     return {"success": True, "message": msg, "fails": fails}
+
+
+def update_all_apps(file_name, file_data):
+    """用上传的 app.exe 更新所有项目"""
+    import base64
+    if not file_data:
+        return {"success": False, "message": "未收到文件数据"}
+    if not file_name.lower().endswith('.exe'):
+        return {"success": False, "message": "只接受 .exe 文件"}
+
+    # 写入临时文件到 ROOT_DIR（与目标同盘，硬链接不能跨盘）
+    tmp_path = ROOT_DIR / f"_tmp_{int(time.time())}_{file_name}"
+    try:
+        with open(tmp_path, 'wb') as tmp:
+            tmp.write(base64.b64decode(file_data))
+        source_app_path = str(tmp_path)
+        logging.info(f"更新APP: 收到文件 {file_name}, 大小 {tmp_path.stat().st_size} 字节, 写入 {source_app_path}")
+    except Exception as e:
+        logging.error(f"更新APP: 文件写入失败: {e}")
+        return {"success": False, "message": f"文件写入失败: {e}"}
+
+    result = apply_app_update(source_app_path)
+
+    # 清理临时文件
+    try:
+        os.unlink(source_app_path)
+    except Exception:
+        pass
+    return result
+
+
+def download_release_asset(tag, asset_name, dest_path):
+    """从 GitHub Release 下载资产到本地（自动尝试镜像加速）"""
+    resp = _request_with_mirrors(
+        f'{GITHUB_REPO_FULL}/releases/download/{tag}/{asset_name}',
+        stream=True, timeout=30)
+    _download_stream(resp, str(dest_path), label=asset_name)
+
+
+def check_github_update():
+    """检查 GitHub Release 是否有新版本"""
+    if not HAS_UPDATER:
+        return {"success": False, "message": "更新模块不可用（缺少 novel_publisher.updater）"}
+    try:
+        latest_tag = fetch_latest_version()
+    except Exception as e:
+        logging.error(f"检查更新失败: {e}")
+        return {"success": False, "message": f"检查更新失败: {e}"}
+    return {
+        "success": True,
+        "latest_tag": latest_tag,
+        "server_version": SERVER_VERSION,
+        "has_update": is_newer(latest_tag, SERVER_VERSION),
+    }
+
+
+def update_apps_from_github(tag):
+    """后台任务：下载 Release 的 app.exe 并批量更新所有项目（硬链接优先，保底复制）"""
+    tmp_path = ROOT_DIR / f"_update_{tag}_app.exe"
+    try:
+        append_log(f"[更新] 开始下载 {tag} 的 app.exe ...")
+        download_release_asset(tag, 'app.exe', tmp_path)
+        size = tmp_path.stat().st_size
+        if size < 1024 * 1024:
+            raise RuntimeError(f"下载的 app.exe 过小({size} 字节)，疑似无效")
+        append_log(f"[更新] 下载完成 ({size / 1024 / 1024:.1f} MB)，开始批量更新所有项目")
+        result = apply_app_update(str(tmp_path))
+        append_log(f"[更新] {tag} 项目 app 批量更新完成: {result['message']}")
+        return result
+    finally:
+        try:
+            os.unlink(str(tmp_path))
+        except Exception:
+            pass
+
+
+def update_server_from_github(tag):
+    """后台任务：下载 manager_server.exe 并替换重启服务端自身"""
+    if not getattr(sys, 'frozen', False):
+        return {"success": False, "message": "源码模式运行的服务端不支持自动替换，请手动更新"}
+    new_exe = sys.executable + '.new'
+    append_log(f"[更新] 开始下载 {tag} 的 manager_server.exe ...")
+    download_release_asset(tag, 'manager_server.exe', new_exe)
+    size = os.path.getsize(new_exe)
+    if size < 1024 * 1024:
+        os.remove(new_exe)
+        raise RuntimeError(f"下载的文件过小({size} 字节)，已取消替换")
+    append_log(f"[更新] 下载完成 ({size / 1024 / 1024:.1f} MB)，服务端即将退出并自动升级重启...")
+    _run_replace_and_restart(new_exe)  # 内部 os._exit，不会返回
+
+
+# 更新检查/执行状态（供前端轮询）
+update_state = {
+    "checking": False,
+    "check_result": None,   # check_github_update() 的返回
+    "task_running": False,
+    "task_msg": "",
+}
+
+
+def _update_task_worker(target, tag):
+    update_state["task_running"] = True
+    update_state["task_msg"] = "正在执行..."
+    try:
+        if target == 'apps':
+            result = update_apps_from_github(tag)
+        else:
+            result = update_server_from_github(tag)
+        update_state["task_msg"] = result.get("message", "完成")
+    except Exception as e:
+        logging.error(f"[更新] {target} 更新失败: {e}")
+        update_state["task_msg"] = f"更新失败: {e}"
+    finally:
+        update_state["task_running"] = False
 
 
 def migrate_projects(account_tags, target_dir):
@@ -1117,6 +1226,10 @@ class RequestHandler(BaseHTTPRequestHandler):
             self._send_json({"total": t, "completed": c, "queue": task_queue.qsize()})
             return
 
+        if path == '/api/update_status':
+            self._send_json(update_state)
+            return
+
         if path == '/api/config':
             config_file = os.path.join(os.path.expanduser("~\\Documents"), '_login_config.ini')
             account = ''
@@ -1191,6 +1304,44 @@ class RequestHandler(BaseHTTPRequestHandler):
             file_data = body.get('file_data', '')
             result = update_all_apps(file_name, file_data)
             self._send_json(result)
+            return
+
+        if path == '/api/check_update':
+            if update_state["checking"] or update_state["task_running"]:
+                self._send_json({"success": False, "message": "已有更新任务进行中，请稍候"})
+                return
+
+            def _check_worker():
+                update_state["checking"] = True
+                try:
+                    update_state["check_result"] = check_github_update()
+                finally:
+                    update_state["checking"] = False
+
+            threading.Thread(target=_check_worker, daemon=True).start()
+            self._send_json({"success": True, "message": "开始检查更新，请稍候查看结果"})
+            return
+
+        if path == '/api/update_from_github':
+            target = body.get('target', '')
+            if target not in ('apps', 'server'):
+                self._send_json({"success": False, "message": "无效的更新目标"}, 400)
+                return
+            if batch_pool_running:
+                self._send_json({"success": False, "message": "批量任务执行中，禁止更新，请等待任务完成"})
+                return
+            if update_state["task_running"] or update_state["checking"]:
+                self._send_json({"success": False, "message": "已有更新任务进行中，请稍候"})
+                return
+            check = update_state.get("check_result") or {}
+            tag = check.get("latest_tag", '')
+            if not check.get("success") or not tag:
+                self._send_json({"success": False, "message": "请先检查更新获取最新版本号"})
+                return
+
+            threading.Thread(target=_update_task_worker, args=(target, tag), daemon=True).start()
+            label = '所有项目 app.exe' if target == 'apps' else '服务端自身'
+            self._send_json({"success": True, "message": f"开始更新{label}到 {tag}，请在日志查看进度"})
             return
 
         if path == '/api/update_browser_path':
