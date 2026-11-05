@@ -65,7 +65,7 @@ logging.basicConfig(
 )
 
 PORT = 18765
-SERVER_VERSION = 'v2.2.9'  # 与仓库 VERSION / Release tag 保持一致
+SERVER_VERSION = 'v2.3.1'  # 与仓库 VERSION / Release tag 保持一致
 DEFAULT_ROOT_DIR = Path(r"E:\AutoWriter")
 ROOT_DIR = DEFAULT_ROOT_DIR if DEFAULT_ROOT_DIR.is_dir() else Path.cwd()
 DEFAULT_BROWSER_PATH = r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe"

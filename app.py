@@ -60,7 +60,7 @@ from novel_publisher.updater import check_update_async, apply_update
 CONFIG_FILE = r'config.ini'
 AUTH_FILE = r'auth.json'
 
-VERSION = 'v2.2.9'
+VERSION = 'v2.3.1'
 
 class NovelPublisherApp(tk.Tk):
     def __init__(self):
@@ -887,7 +887,7 @@ class NovelPublisherApp(tk.Tk):
                                             print("已完成签约合同，请手动完成确认")
                                             break
                                         print("已申请签约")
-                                        if row.get_by_text("签约审核已通过，请尽快完成合同签约").count() != 0:
+                                        if row.get_by_text("签约审核已通过，请尽快完成合同签约").count() != 0 or row.get_by_text("评估通过，请尽快填写合同信息").count() != 0:
                                             print("评估通过")
                                             row.get_by_text("签约管理").click(timeout=1500)
                                             page.wait_for_timeout(1500) 
@@ -914,9 +914,9 @@ class NovelPublisherApp(tk.Tk):
                                             bank_branch_input.press("Enter", delay=1000)
                                             page.wait_for_timeout(1500)
                                             page.get_by_role("button", name="确认无误，提交").click(timeout=1500)
-                                            page.wait_for_timeout(1500)
-                                            page.get_by_role("button", name="生成合同").click(timeout=1500)
-                                            page.get_by_role("button", name="立即签约").click(timeout=120000)
+                                            # page.wait_for_timeout(1500)
+                                            # page.get_by_role("button", name="生成合同").click(timeout=1500)
+                                            # page.get_by_role("button", name="立即签约").click(timeout=120000)
 
                                             print("自动签约完成！")
                                             page.wait_for_timeout(timeout=10000)
@@ -2987,7 +2987,7 @@ class NovelPublisherApp(tk.Tk):
                         while MAX_REPEAT > 0:
                             MAX_REPEAT -= 1
                             try:
-                                publish_page.wait_for_load_state('networkidle', timeout=10000)
+                                publish_page.wait_for_load_state('domcontentloaded', timeout=10000)
                             except:
                                 print(f"发布页面加载超时重试，剩余{MAX_REPEAT}次")
                                 publish_page.reload(timeout=3000)

@@ -56,7 +56,12 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           VERSION=${{ steps.check.outputs.version }}
+          # 从 CHANGELOG.md 提取当前版本的更新说明（## vX.Y.Z 到下一个 ## 之间），提取不到用默认文案
+          NOTES=$(awk -v ver="$VERSION" 'index($0, "## " ver) == 1 {flag=1; next} /^## / && flag {exit} flag {print}' CHANGELOG.md)
+          if [ -z "$NOTES" ]; then
+            NOTES="自动发布版本 $VERSION，附件 app.exe 为最新主程序构建，manager_server.exe 为 Web 管理器服务端构建。程序内点击【检查更新】可自动升级。"
+          fi
           gh release create "$VERSION" "dist/app.exe" "dist/manager_server.exe" \
             --title "小说自动发布工具 $VERSION" \
-            --notes "自动发布版本 $VERSION，附件 app.exe 为最新主程序构建，manager_server.exe 为 Web 管理器服务端构建。程序内点击【检查更新】可自动升级。" \
+            --notes "$NOTES" \
             --latest
