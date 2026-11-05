@@ -32,7 +32,7 @@ DEFAULT_MIRRORS = [
 
 # 源码模式下允许覆盖的文件/目录（避免破坏用户配置和数据）
 UPDATE_WHITELIST_FILES = ('app.py', 'app_cli.py', 'browser_detector.py', 'font_map.py', 'icon.py')
-UPDATE_WHITELIST_DIRS = ('novel_publisher', 'cli')
+UPDATE_WHITELIST_DIRS = ('novel_publisher', 'cli', 'skills')
 UPDATE_WHITELIST_EXTS = ('.py', '.ico', '.md')
 
 

@@ -14,6 +14,7 @@
 - 程序内更新白名单新增 app_cli.py 与 cli/ 目录，源码模式更新可完整覆盖
 - 签约流程适配：兼容"评估通过，请尽快填写合同信息"提示；签约确认步骤调整
 - 发布页面加载等待策略优化（networkidle → domcontentloaded 重试）
+- 新增 AI 技能文档 skills/auto-publish-cli/SKILL.md：教 AI 如何调用 CLI（登录请求、配置数据、命令参考、结果反馈、错误处理）；Release 附件附带 skills.zip，程序内源码更新也会覆盖 skills/ 目录
 - 修复：requirements.txt 补充缺失的 parsel 依赖（影响 CI 构建的 exe）
 
 ## v2.2.9
