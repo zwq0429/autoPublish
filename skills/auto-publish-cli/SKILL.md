@@ -134,6 +134,22 @@ python -m cli platforms     # 列出支持的平台
 python -m cli --help        # 总帮助
 ```
 
+### 番茄特有任务
+
+以下命令**仅支持番茄平台**，共用参数：`-p/--platform`、`--title`、`--browser-path`、`--keep-browser-open`、`--config`、`--json`（JSON 含 `novel_status` 最新状态）。
+
+| 命令 | 对应 UI 任务 | 说明 |
+|---|---|---|
+| `python -m cli sstory [--folder X]` | 短故事批量发布 | 发布 `短篇直出/` 下的 txt（默认单次≤10篇），成功的文件移入 `已发布MM-DD/` |
+| `python -m cli sign` | 自动签约 | 自动签约流程；**长任务**，评估期间每小时巡查，勿设超时 |
+| `python -m cli verify` | 自动验证 | 作品推荐确认；**长任务**，最长等待 12 小时；需预先上传非模版封面 |
+| `python -m cli book-test` | 书测 | 上传 `项目根/书测/` 下 jpg/png 封面图配置实验（文件名去掉"-封面"作为书名），完成后目录改名"已完成" |
+| `python -m cli cover-test` | 封测 | 多封面推荐，上传 `项目根/封测/` 封面图，完成后目录改名"已完成" |
+| `python -m cli attendance` | 全勤检查 | 核查当月听读收益与每日发布字数（≥4000/6000 字达标），结果写入 `novel_status`（全勤中/有缺勤/有全勤实力） |
+
+- 这些任务会把最新小说状态写回 config.ini `[Novel] novel_status`，AI 执行后读该字段（或 `--json`）反馈给用户
+- `sign` / `verify` 是**小时级长任务**：AI 调用时应告知用户预计耗时，或建议用户在后台终端自行运行
+
 ## 5. 结果反馈（AI 如何获取执行结果）
 
 1. **退出码**：`0` 成功；非 0 失败（publish 中配置/登录问题为 2，运行失败为 1）

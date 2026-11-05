@@ -122,6 +122,83 @@ def _read_config_platform(config_file: str) -> str:
     return config.get('Settings', 'publish_plate', fallback='番茄')
 
 
+# ---------------- 番茄特有任务（短故事/签约/验证/书测/封测/全勤检查） ----------------
+
+# 命令名 -> (来源任务名, fanqie_tasks 函数名, 帮助文案)
+FANQIE_TASKS = {
+    'sstory': ('短故事批量发布', 'run_sstory_batch', '短故事批量发布：发布 短篇直出/ 下的 txt（番茄，单次≤10篇）'),
+    'sign': ('自动签约', 'run_sign', '自动签约（番茄，长任务：评估期间每小时巡查）'),
+    'verify': ('自动验证', 'run_verify', '自动验证：作品推荐确认（番茄，长任务：最长等待12小时）'),
+    'book-test': ('书测', 'run_book_test', '书测：上传 项目根/书测/ 封面图配置实验（番茄）'),
+    'cover-test': ('封测', 'run_cover_test', '封测：多封面推荐，上传 项目根/封测/ 封面图（番茄）'),
+    'attendance': ('全勤检查', 'run_attendance', '全勤检查：当月收益+发布记录核查，更新小说状态（番茄）'),
+}
+
+
+def _build_task_ctx(args):
+    """为番茄特有任务构建运行上下文（替代原 UI 实例状态）。"""
+    import configparser
+    from types import SimpleNamespace
+    from novel_publisher.flow import get_site_url
+
+    config = configparser.ConfigParser()
+    if os.path.exists(args.config):
+        config.read(args.config, encoding='utf-8')
+
+    platform = args.platform or config.get('Settings', 'publish_plate', fallback='番茄')
+    browser_path = args.browser_path or config.get('Settings', 'custom_browser_path', fallback='')
+    keep_browser_open = config.getboolean('Settings', 'close_browser_open', fallback=False)
+    if getattr(args, 'keep_browser_open', False):
+        keep_browser_open = True
+
+    ctx = SimpleNamespace(
+        publish_plate=platform,
+        browser_path=browser_path,
+        site_url=get_site_url(platform),
+        novel_title=args.title or config.get('Novel', 'novel_title', fallback=''),
+        writer=config.get('Novel', 'novel_writer', fallback=''),
+        keep_browser_open=keep_browser_open,
+        auth_file=os.path.join(APP_DIR, 'auth.json'),
+        config=config,
+        config_file=args.config,
+    )
+    if hasattr(args, 'folder'):
+        ctx.story_folder = args.folder
+    return ctx
+
+
+def _make_task_cmd(func_name):
+    def _cmd(args) -> int:
+        from novel_publisher import fanqie_tasks
+        ctx = _build_task_ctx(args)
+        print(f"任务: {FANQIE_TASKS[args.command][0]}  平台: {ctx.publish_plate}  小说: {ctx.novel_title}")
+        ok = getattr(fanqie_tasks, func_name)(ctx)
+        if args.json:
+            import json
+            print(json.dumps({'ok': bool(ok), 'task': FANQIE_TASKS[args.command][0],
+                              'novel_status': getattr(ctx, 'novel_status', None)},
+                             ensure_ascii=False))
+        return 0 if ok else 1
+    return _cmd
+
+
+def register_fanqie_tasks(sub):
+    """注册番茄特有任务子命令。"""
+    for cmd, (_task_name, func_name, help_text) in FANQIE_TASKS.items():
+        p = sub.add_parser(cmd, help=help_text, description=help_text)
+        p.add_argument('-p', '--platform', help='平台名（仅支持番茄，默认取 config.ini）')
+        p.add_argument('--title', help='小说名（默认取 config.ini [Novel] novel_title）')
+        p.add_argument('--browser-path', help='浏览器路径（默认取 config.ini）')
+        p.add_argument('--keep-browser-open', action='store_true',
+                       help='保留浏览器窗口（默认取 config.ini close_browser_open）')
+        p.add_argument('--config', default='config.ini', help='配置文件路径（默认 config.ini）')
+        p.add_argument('--json', action='store_true', help='结束时输出 JSON 结果（含最新小说状态）')
+        if cmd == 'sstory':
+            p.add_argument('--folder', default=os.path.join(APP_DIR, '短篇直出'),
+                           help='短故事 txt 文件夹（默认 项目根/短篇直出）')
+        p.set_defaults(func=_make_task_cmd(func_name))
+
+
 def build_publish_parser(parser: argparse.ArgumentParser):
     """为 publish 命令添加参数（平台包装脚本复用）。"""
     parser.add_argument('-p', '--platform', help='发布平台（默认取 config.ini 的 publish_plate）')
@@ -171,6 +248,8 @@ def main(argv=None):
     p = sub.add_parser('create-book', help='根据简介/大纲创建新书')
     cli_create_book.register(p)
     p.set_defaults(func=cli_create_book.main)
+
+    register_fanqie_tasks(sub)
 
     args = parser.parse_args(argv)
     return args.func(args)

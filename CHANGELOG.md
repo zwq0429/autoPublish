@@ -1,5 +1,16 @@
 # 更新日志
 
+## 未发布
+
+- CLI 新增番茄特有任务子命令（提取自 app.py 定时任务，novel_publisher/fanqie_tasks.py）：
+  - `python -m cli sstory` 短故事批量发布（发布 短篇直出/ 下的 txt）
+  - `python -m cli sign` 自动签约（长任务）
+  - `python -m cli verify` 自动验证/作品推荐确认（长任务，最长 12 小时）
+  - `python -m cli book-test` 书测（上传 书测/ 封面图）
+  - `python -m cli cover-test` 封测（多封面推荐，上传 封测/ 封面图）
+  - `python -m cli attendance` 全勤检查（当月收益+发布记录核查，更新 novel_status）
+- SKILL.md 补充番茄特有任务章节
+
 ## v2.3.1
 
 - 架构拆分：各平台发布逻辑模块化为纯函数（novel_publisher/platforms/ 下番茄/起点/Q阅/七猫/纵横/飞卢/微信/书旗/晋江/息壤/咪咕 9 个平台模块 + flow.py 运行时状态），app.py 原样保留作为旧实现
