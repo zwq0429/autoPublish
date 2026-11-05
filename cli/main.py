@@ -223,6 +223,14 @@ def main(argv=None):
     from cli import check as cli_check
     from cli import download as cli_download
     from cli import create_book as cli_create_book
+    from cli import export as cli_export
+    from cli import import_chapters as cli_import_chapters
+    from cli import login as cli_login
+    from cli import manual_browser as cli_manual_browser
+    from cli import detect_browser as cli_detect_browser
+    from cli import progress_check as cli_progress_check
+    from cli import plan as cli_plan
+    from cli import config as cli_config
 
     parser = argparse.ArgumentParser(
         prog='cli',
@@ -248,6 +256,38 @@ def main(argv=None):
     p = sub.add_parser('create-book', help='根据简介/大纲创建新书')
     cli_create_book.register(p)
     p.set_defaults(func=cli_create_book.main)
+
+    p = sub.add_parser('export', help='导出章节为单个 txt')
+    cli_export.register(p)
+    p.set_defaults(func=cli_export.main)
+
+    p = sub.add_parser('import', help='导入 txt 并拆分为章节文件')
+    cli_import_chapters.register(p)
+    p.set_defaults(func=cli_import_chapters.main)
+
+    p = sub.add_parser('login', help='打开浏览器扫码登录，保存登录态 auth.json')
+    cli_login.register(p)
+    p.set_defaults(func=cli_login.main)
+
+    p = sub.add_parser('manual-browser', help='打开手动浏览器会话（保持登录态）')
+    cli_manual_browser.register(p)
+    p.set_defaults(func=cli_manual_browser.main)
+
+    p = sub.add_parser('detect-browser', help='自动检测本机浏览器并写回 config.ini')
+    cli_detect_browser.register(p)
+    p.set_defaults(func=cli_detect_browser.main)
+
+    p = sub.add_parser('progress-check', help='发布进度自检（核对本地记录与平台进度）')
+    cli_progress_check.register(p)
+    p.set_defaults(func=cli_progress_check.main)
+
+    p = sub.add_parser('plan', help='快速发布计划（如 --plan "15*1+15*2+2*7"）')
+    cli_plan.register(p)
+    p.set_defaults(func=cli_plan.main)
+
+    p = sub.add_parser('config', help='读取/设置 config.ini 配置项（AI 安全读写）')
+    cli_config.register(p)
+    p.set_defaults(func=cli_config.main)
 
     register_fanqie_tasks(sub)
 

@@ -2,6 +2,16 @@
 
 ## 未发布
 
+- CLI 补齐全量操作命令（至此 app.py 的所有具体业务操作均有 CLI 对应，AI 可完全接管）：
+  - `login` 扫码登录保存 auth.json（人工扫码，CLI 引导）
+  - `export` / `import` 导出章节为 txt / 导入 txt 拆分为章节文件（含追加模式与章节选择）
+  - `detect-browser` 自动检测浏览器并写回配置；`manual-browser` 打开手动浏览器会话
+  - `plan` 快速发布计划（最速开书，支持 --dry-run 预览）
+  - `progress-check` 发布进度自检（核对本地记录与平台进度）
+  - `config get/set` AI 安全读写 config.ini（自动建 section）
+- app_cli.py 槽函数全面 CLI 化：登录/浏览器检测/导出/导入也改为调用 CLI 子进程
+- SKILL.md 补充上述命令与全套自动化工作流
+
 - CLI 新增番茄特有任务子命令（提取自 app.py 定时任务，novel_publisher/fanqie_tasks.py）：
   - `python -m cli sstory` 短故事批量发布（发布 短篇直出/ 下的 txt）
   - `python -m cli sign` 自动签约（长任务）

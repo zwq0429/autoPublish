@@ -214,6 +214,107 @@ class CliNovelPublisherApp(NovelPublisherApp):
         threading.Thread(target=worker, daemon=True).start()
 
 
+    # ---------------- 登录（原槽: run_login_thread） ----------------
+
+    def run_login_thread(self):
+        """覆写：调用 CLI login（打开浏览器扫码，保存 auth.json）。"""
+        threading.Thread(target=self._run_cli, args=(['login'],), daemon=True).start()
+
+    # ---------------- 浏览器检测（原槽: auto_detect_browser） ----------------
+
+    def auto_detect_browser(self):
+        """覆写：调用 CLI detect-browser，完成后刷新界面。"""
+        def worker():
+            self._run_cli(['detect-browser'])
+
+            def refresh():
+                try:
+                    self.refresh_ui()
+                except Exception:
+                    traceback.print_exc()
+            self.after(0, refresh)
+
+        threading.Thread(target=worker, daemon=True).start()
+
+    # ---------------- 导出章节（原槽: export_chapters） ----------------
+
+    def export_chapters(self):
+        """覆写：保留导出对话框 UI，“开始导出”改为调用 CLI export。"""
+        import tkinter as tk
+        from tkinter import ttk
+
+        try:
+            novels_folder = self.novels_folder_var.get()
+            if not novels_folder or not os.path.isdir(novels_folder):
+                print("错误：请先设置正确的小说文件夹路径")
+                return
+
+            export_dialog = tk.Toplevel(self)
+            export_dialog.title("导出章节")
+            export_dialog.geometry("360x260")
+            export_dialog.transient(self)
+            export_dialog.grab_set()
+
+            ttk.Label(export_dialog, text="导出范围:").pack(pady=10)
+            range_frame = ttk.Frame(export_dialog)
+            range_frame.pack(pady=5)
+            ttk.Label(range_frame, text="从第").pack(side=tk.LEFT)
+            start_var = tk.IntVar(value=1)
+            start_entry = ttk.Entry(range_frame, textvariable=start_var, width=5)
+            start_entry.pack(side=tk.LEFT, padx=5)
+            ttk.Label(range_frame, text="章到第").pack(side=tk.LEFT)
+            end_var = tk.IntVar(value=1)
+            end_entry = ttk.Entry(range_frame, textvariable=end_var, width=5)
+            end_entry.pack(side=tk.LEFT, padx=5)
+            ttk.Label(range_frame, text="章").pack(side=tk.LEFT)
+            export_all_var = tk.BooleanVar(value=True)
+            ttk.Checkbutton(export_dialog, text="导出全部",
+                            variable=export_all_var,
+                            command=lambda: self.toggle_export_range(start_entry, end_entry, export_all_var)
+                            ).pack(pady=5)
+
+            ttk.Label(export_dialog, text="输出文件名:").pack(pady=5)
+            output_var = tk.StringVar(value=f"{self.novel_title_var.get()}_导出.txt")
+            ttk.Entry(export_dialog, textvariable=output_var, width=36).pack(pady=5)
+
+            def perform_export():
+                cli_args = ['export', '--folder', novels_folder, '--output', output_var.get()]
+                if export_all_var.get():
+                    cli_args.append('--all')
+                else:
+                    cli_args += ['--start', str(start_var.get()), '--end', str(end_var.get())]
+                export_dialog.destroy()
+                threading.Thread(target=self._run_cli, args=(cli_args,), daemon=True).start()
+
+            ttk.Button(export_dialog, text="开始导出", command=perform_export).pack(pady=15)
+        except Exception as e:
+            traceback.print_exc()
+            print(f"导出功能出错: {e}")
+
+    # ---------------- 导入章节（原槽: import_chapters） ----------------
+
+    def import_chapters(self, event=None):
+        """覆写：选择 txt 文件后调用 CLI import 拆分为章节文件。"""
+        import tkinter as tk
+        from tkinter import filedialog, messagebox
+
+        try:
+            file_path = filedialog.askopenfilename(
+                title="选择要导入的TXT文件",
+                filetypes=[("TXT files", "*.txt"), ("All files", "*.*")])
+            if not file_path:
+                return
+            append_mode = messagebox.askyesno(
+                "导入模式", "是否追加导入？\n\n是 = 追加到现有章节之后\n否 = 全部导入（从第 001 章开始）")
+            cli_args = ['import', '--file', file_path]
+            if append_mode:
+                cli_args += ['--mode', 'append']
+            threading.Thread(target=self._run_cli, args=(cli_args,), daemon=True).start()
+        except Exception as e:
+            traceback.print_exc()
+            print(f"导入功能出错: {e}")
+
+
 def main():
     import app as app_module
 

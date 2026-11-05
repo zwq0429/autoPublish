@@ -130,9 +130,23 @@ python -m cli create-book [--info-file X | --outline-dir .] [--platform X]
 ### 其他
 
 ```bash
-python -m cli platforms     # 列出支持的平台
-python -m cli --help        # 总帮助
+python -m cli platforms        # 列出支持的平台
+python -m cli --help           # 总帮助
 ```
+
+### 环境/配置/素材类命令（AI 自动化全套工作流用）
+
+| 命令 | 说明 |
+|---|---|
+| `python -m cli detect-browser [--no-save]` | 自动检测本机浏览器路径并写回 config.ini（首次配置第一步） |
+| `python -m cli login [-p X] [--output X]` | 打开浏览器扫码登录，保存 auth.json（人工扫码环节，AI 引导用户执行） |
+| `python -m cli manual-browser [-p X]` | 打开保持登录态的手动浏览器会话（人工干预/补操作用） |
+| `python -m cli config get [Section.key ...] [--json]` | 读配置（`config get` 全量；缺文件报错 exit 2） |
+| `python -m cli config set Section.key value [...]` | 写配置（自动建 section；**这是 AI 修改配置的首选方式**，勿手改 [History] 进度区） |
+| `python -m cli export [--folder X] [-o X] [--all\|--start A --end B]` | 把章节文件夹导出为单个 txt |
+| `python -m cli import --file X [--output-dir X] [--mode all\|append] [--chapters 1,3,5-7] [--reverse]` | 导入 txt 拆分为 Chapter_NNN.md 章节文件（成功后写回 novels_folder） |
+| `python -m cli plan --plan "15*1+15*2+2*7" [--dry-run]` | 快速发布计划（最速开书）：逐阶段发布；`--dry-run` 只解析打印 |
+| `python -m cli progress-check` | 发布进度自检：核对本地记录与平台最新进度，确认后更新本地 History |
 
 ### 番茄特有任务
 
@@ -172,10 +186,11 @@ python -m cli --help        # 总帮助
 
 **首次配置（AI 引导用户）**
 1. 确认环境：`pip install -r requirements.txt`
-2. 编辑 config.ini：`custom_browser_path`（浏览器路径）、`publish_plate`、`novels_folder`、`novel_title`
-3. 请求用户完成登录（第 2 节）
-4. `python -m cli check` 验证章节文件没问题
-5. `python -m cli publish --json` 试发布；核对 config.ini [History]
+2. `python -m cli detect-browser` 检测浏览器并写回配置
+3. `python -m cli config set Settings.publish_plate 番茄 Novel.novel_title 书名 Novel.novels_folder 章节目录` 配置基础项
+4. `python -m cli login` 请求用户扫码登录（第 2 节话术）
+5. `python -m cli check` 验证章节文件没问题
+6. `python -m cli publish --json` 试发布；`python -m cli config get History --json` 核对进度
 
 **每日发布（AI / 定时任务）**
 1. 读 config.ini 确认今日是否为间隔发布日、剩余计划
